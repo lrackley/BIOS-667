@@ -1,0 +1,1326 @@
+---
+title: "BIOS 667 — Homework 3 (GLM, GEE, GLMM)"
+author: "18627"
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    embed-resources: true
+    code-fold: true
+    code-tools: false
+execute:
+  echo: false
+  warning: false
+  message: false
+editor: visual
+---
+
+::: callout-note
+Each prompt requires both statistical reasoning and narrative interpretation rooted in the generated diagnostics. Keep code hidden in your rendered submission (but feel free to unhide while drafting) so the emphasis stays on the conclusions, tables, and graphics that defend your modeling choices.
+
+**NEW THIS YEAR:** This homework explicitly tests your understanding of the distinction between marginal (population-average) and conditional (subject-specific) effects for non-linear models. Pay careful attention to which estimand each analysis targets.
+
+**Interpretation length guidance**: For "WRITE" tasks, aim for 2-5 sentences for simple interpretations (e.g., "interpret the OR") and 1-2 paragraphs for complex conceptual explanations (e.g., Synthesis section questions). Prioritize clarity and completeness over brevity.
+
+**Equations in written responses**: You may include equations in written explanations when they clarify your point, but also provide plain-language interpretation. Balance mathematical precision with conceptual clarity.
+:::
+
+```{r}
+#| label: setup
+# Load required packages
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(broom)
+  library(broom.mixed)
+  library(geepack)
+  library(lme4)
+  library(scales)
+  library(MASS)      # for glm.nb
+  library(dplyr) # for data manipulation
+  library(kableExtra) # for displaying output
+  library(gtsummary) # for tidying regression outputs
+  library(patchwork) # for arranging plots
+  library(gratia) # for rootogram
+  library(mgcv)
+  library(ggplot2) # for plotting
+  library(sjPlot) # for side-by-side model comparisons
+  library(performance) # for calculating icc
+  library(broom.helpers) # for model coefficients tibbles
+  library(car) # for ANOVA
+})
+
+## IMPORTANT ####################################################
+seed <- 18627  # REPLACE 12345 with the last 5 digits of your PID
+#################################################################
+
+stopifnot(seed >= 10000 & seed <= 99999)
+set.seed(seed)
+
+# Set options for clean output
+options(contrasts = c("contr.treatment", "contr.poly"))
+theme_set(theme_minimal(base_size = 12))
+knitr::opts_chunk$set(fig.width = 6, fig.height = 4, dpi = 120)
+```
+
+------------------------------------------------------------------------
+
+## Exploratory Analysis: Are Treatment Trajectories Diverging? (3 pts)
+
+> Each student has a unique simulated dataset based on their PID seed. The data mimic a six-visit longitudinal intervention. `arm == "Tx"` receives a behavioral reinforcement add-on that should increase the probability of sustained remission at later visits. `dose_dev` captures how far each participant deviated from the intended reinforcement intensity (positive = more contacts, negative = fewer), and `baseline_stress` is standardized (mean 0, SD 1).
+
+```{r, echo=FALSE}
+#| label: data-generation
+
+message("Simulating dataset...")
+n_id <- 180
+n_visit <- 6
+ids <- factor(seq_len(n_id))
+
+subject_df <- tibble(
+  id = ids,
+  arm = factor(rbinom(n_id, 1, 0.5), levels = c(0, 1), labels = c("Control", "Tx")),
+  clinic = factor(sample(c("A", "B", "C", "D"), n_id, replace = TRUE, prob = c(0.3, 0.2, 0.35, 0.15))),
+  baseline_stress = rnorm(n_id, 0, 1),
+  dose_dev = rnorm(n_id, 0, 0.4),
+  age0 = rnorm(n_id, 52, 6),
+  exposure_days = sample(20:30, n_id, replace = TRUE)
+) %>%
+  mutate(arm_num = as.integer(arm == "Tx"))
+
+rand_coef <- tibble(
+  id = ids,
+  b0 = rnorm(n_id, 0, 0.85),
+  b1 = rnorm(n_id, 0, 0.35),
+  b_count = rnorm(n_id, 0, 0.5)
+)
+
+clinic_effects <- c(A = 0, B = -0.25, C = 0.2, D = 0.05)
+
+long_dat <- expand_grid(
+  id = ids,
+  visit = 0:(n_visit - 1)
+) %>%
+  left_join(subject_df, by = "id") %>%
+  left_join(rand_coef, by = "id") %>%
+  mutate(
+    time_c = visit - mean(visit),
+    weeks = visit * 4,
+    lp = -0.3 + 0.38 * time_c + 0.3 * arm_num + 0.12 * time_c * arm_num +
+      0.32 * baseline_stress - 0.2 * dose_dev +
+      clinic_effects[as.character(clinic)] + b0 + b1 * time_c,
+    remission = rbinom(n(), 1, plogis(lp)),
+    eta_count = log(1.8) + 0.22 * time_c - 0.2 * arm_num - 0.08 * time_c * arm_num +
+      0.18 * baseline_stress + 0.15 * dose_dev +
+      0.1 * clinic_effects[as.character(clinic)] + b_count,
+    flare_count = MASS::rnegbin(n(), mu = exp(eta_count), theta = 1.3),
+    offset_days = exposure_days + visit
+  ) %>%
+  arrange(id, visit)
+
+# Store the time centering value for later use
+time_center_value <- mean(long_dat$visit)
+
+# Create dataset for final visit (visit 5)
+final_visit <- long_dat %>%
+  filter(visit == max(visit))
+
+# Create aggregated count data (sum across all visits per subject)
+agg_counts <- long_dat %>%
+  group_by(id, arm, clinic, baseline_stress, dose_dev) %>%
+  summarise(
+    total_flares = sum(flare_count),
+    total_offset = sum(offset_days),
+    .groups = "drop"
+  )
+```
+
+```{r}
+#| label: data-glimpse
+
+glimpse(long_dat)
+summary(long_dat[, c("remission", "flare_count", "baseline_stress", "dose_dev")])
+```
+
+------------------------------------------------------------------------
+
+### Baseline balance and trajectory divergence
+
+> **Question.** Calculate the observed remission rates (unconditional on covariates) by arm and visit from your simulated `long_dat`. Use these rates to decide whether treatment and control arms started comparably at visit 0 and whether the separation later in follow-up is practically meaningful. Reference concrete probabilities instead of generic statements. Present a table showing mean baseline stress, mean dose deviation, and observed remission rates at visits 0 and 5 by arm.
+
+**Tasks:**
+
+1.  (CODE) Calculate observed remission rates by arm and visit; compute the treatment-control gap at each visit
+2.  (CODE) Create a summary table showing baseline characteristics and remission rates at visits 0 and 5 by arm
+3.  (WRITE) Interpret whether the arms started balanced at visit 0 (no statistical test required—just compare proportions) and whether the divergence by visit 5 is clinically meaningful (e.g., a 5-10 percentage point difference might be modest; \>20 percentage points would be substantial)
+
+```{r,echo=FALSE}
+#| label: data-overview
+
+
+# Calculate remission rates by arm and visit
+rates <- long_dat %>%
+  group_by(visit, arm) %>%
+  summarise(
+    n = n(),
+    num_remission = sum(remission, na.rm = TRUE),
+    remission_rate = round(num_remission/n,3)
+  ) %>%
+  ungroup()
+
+# Calculate treatment-control gaps
+gaps <- rates %>%
+  pivot_wider(names_from = arm, 
+              values_from = remission_rate,
+              id_cols=visit) %>%
+  mutate(remission_gap = Tx - Control)
+
+# Create summary table by arm
+# filter only visit 0 and visit 5
+rates_filtered <- rates %>% 
+  filter(visit==0|visit==5)
+
+# filter only visit 0 to get baseline stats
+visit0 <- long_dat %>%
+  filter(visit==0)
+
+baseline_stats <- visit0 %>%
+  group_by(arm) %>%
+  summarise(
+    mean_stress = round(mean(baseline_stress,na.rm=TRUE),3),
+    mean_dose_dev = round(mean(dose_dev,na.rm=TRUE,3))
+  )
+# transpose baseline_stats df
+baseline_stats_t <- baseline_stats %>% pivot_longer(
+    cols = starts_with("mean_"),
+    names_to = "Row_Label",        
+    values_to = "Value"         
+  ) %>%
+  # 2. Pivot Wider: Spread the 'arm' values (Tx, Control) into new columns
+  pivot_wider(
+    names_from = arm,           
+    values_from = Value         
+  ) %>%
+  # 3. Finalize: Select and order the columns
+  dplyr::select(Row_Label, Tx, Control) %>%
+  mutate(
+    Row_Label = case_when(
+      Row_Label == "mean_stress" ~ "Mean Baseline Stress",
+      Row_Label == "mean_dose_dev" ~ "Mean Dose Deviation",
+      TRUE ~ Row_Label # Keep any other row labels unchanged
+    )
+  )
+
+# transpose remission rate df 
+# Gemini helped with this
+rates_t <- rates_filtered %>%
+  pivot_wider(
+    names_from = arm,
+    values_from = remission_rate,
+    id_cols=visit
+  ) %>%
+  # 4. Optional: Rename the visit column for clearer row labels
+  dplyr::mutate(
+    Row_Label = paste("Remission Rate Visit", visit)
+  ) %>%
+  dplyr::select(Row_Label, Tx, Control) # Reorder columns
+
+# stack up datasets vertically
+EDA_summary <- rbind(baseline_stats_t,rates_t)
+
+# rename Row_Label to Characteristic
+names(EDA_summary)[names(EDA_summary) == "Row_Label"] <- "Characteristic"
+
+
+```
+
+*At visit 0, the remission rates for treatment and control were 0.312 and 0.345, respectively. These rates are roughly equal. At visit 5, the treatment remission rate was 0.753 and the control remission rate was 0.621. There is modest difference of 13.2 percentage points so the divergence in remission rates at visit 5 is possibly clinically meaningful.*
+
+```{r,echo=FALSE}
+#| label: overview-table
+
+
+# Display your summary table using knitr::kable()
+EDA_summary |>
+  kable(digits=3)
+
+```
+
+------------------------------------------------------------------------
+
+## Generalized Linear Models (GLM) (24 pts)
+
+### Final-visit remission model *(11 pts)*
+
+> **Question.** Fit a logistic GLM to visit-5 data with predictors `arm`, `baseline_stress`, `dose_dev`, and clinic indicators. Report odds ratios (ORs) with 95% confidence intervals. Test link function adequacy, check the linearity assumption for continuous predictors, and translate the treatment effect into multiple interpretable scales. Explain whether the treatment effect at visit 5 is consistent with the baseline comparison from the Exploratory Analysis section above.
+
+**Tasks:**
+
+1.  (CODE) Fit the logistic GLM on the visit-5 subset (`final_visit`, created above) and obtain odds ratios with 95% CIs (Hint: use `broom::tidy()` with `exponentiate = TRUE`)
+2.  (CODE) Create a formatted table showing ORs and CIs for all predictors
+3.  (CODE) Create two separate residual plots: (1) deviance residuals vs. fitted probabilities, (2) Pearson residuals vs. fitted probabilities. Comment on patterns in each.
+4.  (CODE) Refit the model with a complementary log-log link; compare AIC/deviance between the two link choices (Note: the complementary log-log link is specified as `family = binomial(link = "cloglog")`)
+5.  (CODE) Test the linearity assumption for `baseline_stress` by adding a quadratic term (`I(baseline_stress^2)`) and conducting a likelihood ratio test between the linear and quadratic models
+6.  (CODE) Translate the treatment effect into an absolute risk difference by predicting visit-5 remission probabilities for Tx and Control at `baseline_stress = 0`, `dose_dev = 0`, and the most common clinic
+7.  (WRITE) Calculate the treatment effect on **three scales**: (1) log-odds: the β coefficient from the model, (2) odds ratio: exp(β), (3) risk difference: the difference in predicted probabilities from Task 6 (P_Tx - P_Control at reference covariates). Explain to a non-statistical collaborator which scale is most interpretable for clinical decision-making and why odds ratios can be misleading when baseline risk is high
+8.  (WRITE) Explain why deviance residuals are generally preferred for assessing overall lack-of-fit in GLMs (they're based on likelihood), while Pearson residuals are useful for specific purposes like detecting overdispersion (especially relevant for count models in Section 2.3, where you'll compute the Pearson dispersion statistic).
+9.  (WRITE) Interpret the preferred link function. The complementary log-log link is often preferred for rare events or grouped time-to-event data. Explain the asymmetry of cloglog compared to logit and describe a scientific scenario where this asymmetry would be desirable. (Refer to Lecture 11 slides on link functions. The cloglog link has P(Y=1) → 1 faster than it → 0, unlike the symmetric logit link.)
+10. (WRITE) Interpret the quadratic test result. If the quadratic term is not significant (p \> 0.05), the linear relationship suffices. If significant, baseline_stress has a non-linear (curved) relationship with remission on the logit scale. Also interpret at least one other covariate (e.g., dose_dev)
+
+```{r}
+#| label: glm-final
+
+
+# Fit logistic regression model
+# IMPORTANT: use final_visit (visit 5 only)
+logistic_model <- glm(remission ~ arm + baseline_stress + dose_dev + clinic,
+                      data=final_visit,
+                      family=binomial(link="logit"))
+#summary(logistic_model)
+# Extract and format results
+logistic_model |>
+  tbl_regression(
+    exponentiate = TRUE,
+    pvalue_fun = label_style_pvalue(digits = 3),
+  ) |>
+  add_global_p() |>
+  bold_p(t = 0.10) |>
+  bold_labels() |>
+  italicize_levels()
+
+
+```
+
+```{r}
+#| label: glm-final-diagnostics
+
+
+# Produce TWO separate residual plots: deviance and Pearson
+# plot the deviance residuals vs. the fitted probabilities
+res_df <- data.frame(
+  fitted = fitted(logistic_model),
+  dev    = residuals(logistic_model, type = "deviance"),
+  pear   = residuals(logistic_model, type = "pearson")
+)
+p1 <- ggplot(res_df, aes(fitted, dev)) + geom_point(alpha = .6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Deviance Residuals vs Fitted") + theme_bw()
+p2 <- ggplot(res_df, aes(fitted, pear)) + geom_point(alpha = .6) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Pearson Residuals vs Fitted") + theme_bw()
+p1 + p2
+
+```
+
+The deviance residuals look like 2 parallel straight lines. None are larger than 2 in absolute value so it is not indicative of lack of fit. The bottom line on the Pearson residual plot curves downward and has some values greater than 2 in absolute value, which is indicative of lack of fit. The sum of the deviance residuals squared gives us half of the LRT statistic. Pearson residuals are the difference between observed and predicted counts scaled by the observed count's standard deviation. Raw residuals are not expected to have equal variance. Binary variance is $p(1-p)$ so there is more variation in the midrange. In a standard linear model, RSS = $\sum \hat{\varepsilon}^{2}$ . The equivalent quantity in logistic regression is the deviance residual. Deviance residuals are preferred because some form of standardization is desirable.
+
+```{r}
+#| label: glm-final-cloglog
+
+
+# Fit complementary log-log model and compare AIC/deviance
+# Hint: Use family = binomial(link = "cloglog")
+# Then compare using AIC() and deviance() functions
+cloglog <- glm(remission ~ arm + baseline_stress + dose_dev + clinic,
+                      data=final_visit,
+                      family=binomial(link="cloglog"))
+
+AIC(logistic_model)
+AIC(cloglog)
+
+deviance(logistic_model)
+deviance(cloglog)
+
+
+```
+
+*AIC for the logistic model was 226.02 and 225.17 for complementary log-log model. We would pick the model with the smaller AIC, which is complementary log-log in this case. The logistic model had deviance of 212.02 and complementary log-log had deviance of 211.17. Using cloglog is asymmetric. It is best used when probability is very small or very large. When event is rate, we wouldn't expect it to be symmetric around 0.5.*
+
+```{r}
+#| label: glm-final-quad
+
+
+# Test quadratic vs. linear baseline_stress effect
+# Hint: Fit a model with I(baseline_stress^2) added
+# Then use anova(linear_model, quadratic_model, test = "Chisq")
+quadratic_model <- glm(remission ~ arm + baseline_stress + I(baseline_stress^2) + dose_dev + clinic,
+                      data=final_visit,
+                      family=binomial(link="logit"))
+
+anova(logistic_model,quadratic_model,test="Chisq") |>
+  kable(digits=3)
+
+
+```
+
+*The p-value from the drop-in-deviance test was 0.6842, which is \> 0.05. With this p-value, we fail to reject the null hypothesis. The quadratic version of baseline stress is not a useful predictor in our model. For each additional unit in dose_dev, the odds of sustained remission are expected to multiply by a factor of 2.26 holding all other predictors constant.*
+
+```{r}
+#| label: glm-final-table
+
+
+# Display formatted table
+logistic_model |>
+tidy() |>
+kable(digits = 3)
+
+```
+
+```{r}
+#| label: glm-final-riskdiff
+
+
+# Compute predicted probabilities and risk difference at reference covariates
+newdata=data.frame(baseline_stress=c(0,0),
+                   dose_dev=c(0,0),
+                   arm=c("Tx","Control"),
+                   clinic=c("C","C")) 
+#newdata
+
+newdata$remission_prob <- predict(logistic_model,newdata,type="response")
+
+newdata |>
+  kable(digits=3)
+
+
+```
+
+Log-odds: The log-odds of sustained remission for Tx group are expected to be 0.671 higher than log-odds for Control group when holding all other predictors constant.
+
+OR: The odds of sustained remission for those in Tx group are 1.96 times the odds of sustained remission for those in Control group holding all other predictors constant.
+
+Risk difference: The difference in risk of sustained remission between treatment and control groups was 0.137.
+
+Risk difference is most interpretable. Except for when both odds and risk are 0, the odds will always have a smaller denominator than risk and so odds overstate risk. With bigger risk, odds will overstate risk by a greater degree.
+
+------------------------------------------------------------------------
+
+### Dose–response surface *(5 pts)*
+
+> **Question.** Translate the fitted GLM into predicted probabilities across different covariate profiles at visit 5. For `dose_dev`, use the 10th, 50th, and 90th percentiles from the observed data. For `baseline_stress` (which is standardized), use values of -1, 0, and +1 representing low, average, and high stress (i.e., 1 SD below mean, at mean, and 1 SD above mean). Generate predictions for both treatment arms, holding clinic at the most common level. Comment on how dose adherence modifies the treatment gap.
+
+**Tasks:**
+
+1.  (CODE) Identify the most common clinic level
+2.  (CODE) Create a prediction grid using `expand_grid()` with dose percentiles, stress levels, and both arms
+3.  (CODE) Generate predicted probabilities using `predict()` with `type = "response"`
+4.  (WRITE) Interpret how the treatment advantage varies across dose and stress levels
+
+```{r}
+#| label: glm-dosepred
+
+
+# Find most common clinic
+table(final_visit$clinic)
+
+# Calculate dose percentiles from observed data
+# Hint: Use quantile(final_visit$dose_dev, probs = c(0.1, 0.5, 0.9))
+pctls<-quantile(final_visit$dose_dev,probs= c(0.1,0.5,0.9))
+
+# Create prediction grid
+# For baseline_stress, use c(-1, 0, 1) since it's standardized
+# Hint: expand_grid(arm = ..., dose_dev = ..., baseline_stress = c(-1, 0, 1), clinic = ...)
+grid <- expand_grid(
+  arm=c("Tx","Control"),
+  dose_dev=pctls,
+  baseline_stress=c(-1,0,1),
+  clinic="C"
+)
+# Generate predictions
+preds <- predict(logistic_model, newdata = grid, type = "response")
+
+```
+
+*Clinic C was most common. Probability of sustained remission is higher on treatment with lower baseline stress and higher dose deviation. We see lower remission probability as we move from -1 to 1 in baseline stress. Highest remission probability is found in Tx group, with dose deviation at 90th percentile and baseline stress 1 SD below mean.*
+
+```{r}
+#| label: dose-pred-table
+
+
+# Display formatted prediction table
+# add remission_prob to grid 
+grid$remission_prob <- preds
+
+# Display formatted prediction table
+kable(grid)
+```
+
+------------------------------------------------------------------------
+
+### Overdispersed flare counts *(8 pts)*
+
+> **Question.** Using the aggregated count data (`agg_counts`), fit Poisson, quasi-Poisson, and negative binomial (NB) GLMs with log exposure offsets for `total_offset`. Quantify overdispersion using the Pearson dispersion statistic ($\hat{\phi} = \sum \text{Pearson residuals}^2 / \text{df}$) and create diagnostic visualizations to justify which mean-variance relationship better matches the data. Interpret the treatment rate ratio under the preferred model. Explain the purpose of the offset term.
+
+**Tasks:**
+
+1.  (CODE) Fit Poisson, quasi-Poisson, and negative binomial models with the log exposure offset (`offset(log(total_offset))`)
+2.  (CODE) Calculate the Pearson dispersion statistic from the Poisson model
+3.  (CODE) Create a **rootogram** (or frequency comparison plot) as follows: (a) Bin fitted values into 5-10 groups (e.g., using `cut()` with breaks from `quantile()`), (b) Within each bin, compute: observed count sum, expected count sum (from fitted values), (c) Plot observed vs expected counts by bin (bar plot or scatter plot), (d) Look for systematic over- or under-prediction. Note: You can also use the `countreg::rootogram()` function if you prefer.
+4.  (CODE) Plot empirical mean-variance relationship by binning fitted values and computing mean and variance within each bin; overlay the theoretical relationships: Poisson: variance = $\mu$ (a 45-degree line on a variance vs. mean plot), Negative binomial: variance = $\mu + \mu^{2}/\theta$ using $\hat{\theta}$ from your fitted NB model (`nb_mod$theta`)
+5.  (CODE) Extract and compare rate ratios and SEs from all three models
+6.  (WRITE) Interpret the dispersion statistic and explain how the negative binomial's quadratic mean-variance function addresses the inadequacy you observed in the Poisson model
+7.  (WRITE) Interpret the treatment rate ratio from the preferred model
+8.  (WRITE) Explain the purpose of `offset(log(total_offset))` and how it changes the estimand from "total counts" to "rates per unit exposure"
+
+```{r}
+#| label: glm-counts
+
+
+# Fit Poisson model with offset(log(total_offset))
+fit_pois <- glm(total_flares ~ arm + offset(log(total_offset)), data=agg_counts, family=poisson)
+
+
+# Fit quasi-Poisson model (include same offset)
+fit_qp <- glm(total_flares ~ arm+ offset(log(total_offset)), data=agg_counts, family=quasipoisson)
+
+# Fit negative binomial model (include same offset)
+fit_nb <- glm.nb(total_flares ~ arm + offset(log(total_offset)), data=agg_counts)
+
+# Calculate dispersion statistic
+phi_hat <- sum(residuals(fit_pois, type="pearson")^2) / fit_pois$df.residual
+print(paste0("Phi hat is ",round(phi_hat,2)))
+
+```
+
+```{r}
+#| label: count-rootogram
+
+# Create rootogram for Poisson model
+m <- gam(total_flares ~ arm + offset(log(total_offset)), family = poisson(), data = agg_counts, method = "REML")
+rg <- rootogram(m)
+
+# plot the rootogram
+draw(rg)
+
+```
+
+```{r}
+#| label: count-mean-variance
+
+
+# Create mean-variance plot with theoretical curves
+### 1) Extract fitted means and observed counts
+y  <- agg_counts$total_flares                        # observed counts
+mu <- fitted(fit_pois)                   # fitted means
+
+### (If NB model used)
+theta_hat <- fit_nb$theta           # for NB variance curve
+
+### 2) Bin the fitted means
+# Choose number of bins (10 is typical)
+num_bins <- 10
+
+df <- data.frame(y = y, mu = mu) %>%
+  mutate(bin = cut(mu, breaks = quantile(mu, probs = seq(0,1,length=num_bins+1)),
+                   include.lowest = TRUE))
+
+### 3) Compute empirical mean & variance per bin
+mv_df <- df %>%
+  group_by(bin) %>%
+  summarize(mean_mu = mean(mu),
+            var_y  = var(y),
+            .groups = "drop")
+
+### 4) Compute theoretical curves
+mu_seq <- seq(min(mu), max(mu), length.out = 200)
+
+pois_var <- mu_seq
+nb_var   <- mu_seq + (mu_seq^2)/theta_hat
+
+theory_df <- data.frame(
+  mu_seq = mu_seq,
+  pois_var = pois_var,
+  nb_var = nb_var
+)
+
+### 5) Plot
+ggplot() +
+  geom_point(data = mv_df,
+             aes(x = mean_mu, y = var_y),
+             size = 2, color = "black") +
+  geom_line(data = theory_df,
+            aes(x = mu_seq, y = pois_var),
+            color = "blue", linetype = "dashed", size = 1) +
+  geom_line(data = theory_df,
+            aes(x = mu_seq, y = nb_var),
+            color = "red", size = 1) +
+  labs(
+    x = expression("Mean (" * mu *")"),
+    y = "Variance",
+    title = "Empirical Mean-Variance Relationship with Theoretical Curves",
+    subtitle = "Black points = empirical; Blue = Poisson; Red = Negative Binomial"
+  ) +
+  theme_minimal()
+
+
+```
+
+The rate ratio was about 0.78 for all 3 models. The SE for Poisson model was smaller than the SE for Negative Binomial model. From the rootogram for the Poisson model, we can see between 0 and 50, several counts had under prediction. $\hat{\phi}$ was 9.77, indicating overdispersion and mean \> variance in the Poisson model. Negative binomial addresses this by having an extra dispersion parameter called $\theta$, which allows variance to be greater than the mean. SEs for negative binomial are robust to overdispersion. $\sigma^{2} = \mu + \mu^{2}/\theta$. If $\theta$ is large, then the variance is approximately equal to $\mu$. If $\theta$ is small, then variance is not equal to $\mu$. Since there is overdispersion, the negative binomial is the best model. Using negative binomial model, the interpretation of the rate ratio is as follows: The estimate rate of total flares is for patients in Tx group is 0.789 times the rate for patients in the Control group. By including log offset, we are modeling the rate. The model becomes $\log{\mu} = \alpha + x\beta + \log\text{(exposure)}$ where $\mu/\text{exposure}$ is now flare rate per unit exposure.
+
+```{r}
+#| label: count-compare-table
+#|results: 'asis' 
+
+# Display comparison table
+tab_model(fit_pois,fit_qp,auto.label = FALSE, show.se = TRUE,show.ci=FALSE,
+          dv.labels = c("Poisson", "Quasi-Poisson"),digits=4)
+tab_model(fit_nb,auto.label=FALSE,show.se=TRUE,show.ci=F,dv.labels="Negative Binomial",digits=4)
+
+```
+
+------------------------------------------------------------------------
+
+## Generalized Estimating Equations (GEE) (19 pts)
+
+### Exchangeable working correlation *(10 pts)*
+
+> **Question.** Fit a logistic GEE with exchangeable working correlation for all visits using the model formula `remission ~ time_c * arm + baseline_stress + dose_dev + clinic`. Use centered time (`time_c = visit - mean(visit)`) for easier interpretation of main effects. Compare robust vs. model-based (naive) SEs with explicit small-sample corrections, and report the estimated working correlation. Compute empirical correlations to validate the working structure. Explain the **conceptual distinction** between working correlation and robust inference.
+
+**Note:** You may also fit independence and AR-1 structures now for use in the next question. You may reuse these GEE models in Section 3.2—no need to show fitting code again in that section.
+
+**Tasks:**
+
+1.  (CODE) Fit GEE with exchangeable correlation structure
+2.  (CODE) Extract both robust and naive standard errors
+3.  (CODE) Extract the estimated working correlation (Hint: use `model$geese$alpha`)
+4.  (CODE) Compute empirical Pearson residual correlations as follows: (a) For each lag k (k=1,2,3,4,5), compute correlation between residuals at visit j and visit j+k across all subjects, (b) Example: For lag-1, correlate (visit 0 residuals, visit 1 residuals), (visit 1 residuals, visit 2 residuals), etc., pooled across subjects, (c) Summarize by creating a table of average correlation by lag, (d) Compare the lag-1 correlation to the exchangeable working α (which assumes all lags have equal correlation)
+5.  (CODE) Apply the small-sample bias correction factor $\sqrt{N/(N-p)}$ where: N = number of independent clusters (subjects) = 180, p = number of regression parameters (check `length(coef(<your_gee_object>))`). This corrects for finite-sample bias in the robust variance estimator. Recompute 95% CIs using the corrected SEs.
+6.  (WRITE) Report the working correlation (also called "assumed correlation"—what the GEE algorithm uses) and empirical correlation (also called "observed correlation"—computed from the data), and explain what each represents. Explain why small-sample corrections matter when $N < 40$
+7.  (WRITE) Compare naive vs. robust vs. bias-corrected SEs for key coefficients (especially the interaction). Explain why robust SEs are generally larger than naive SEs
+8.  (WRITE) **Conceptual understanding**: Suppose you misspecify the working correlation structure (e.g., use independence when the true structure is AR-1). Will your $\hat{\beta}$ be biased? Will your robust SEs still be valid? Explain why GEE is called 'semiparametric' and why working correlation affects efficiency but not consistency. (Recall Lecture 12: "semiparametric" means we fully specify the mean model parametrically but leave the correlation structure partially unspecified—we only assume a working form)
+
+```{r}
+#| label: gee-models
+
+
+# Define model formula
+mod_formula <-remission ~ time_c * arm + baseline_stress + dose_dev + clinic
+
+# Fit GEE with exchangeable correlation
+gee_model <- geeglm(
+  formula = mod_formula,
+  id = id,            
+  data = long_dat,
+  family = binomial, 
+  corstr = "exchangeable", 
+  scale.fix = FALSE    
+)
+
+# (Optional) Fit independence and AR-1 for next question
+# independence GEE 
+gee_ind <- geeglm(
+  formula=mod_formula,
+  id=id,
+  data=long_dat,
+  family=binomial,
+  corstr="independence",
+  scale.fix=F
+)
+
+#AR-1 GEE 
+gee_ar1 <- geeglm(
+  formula=mod_formula,
+  id=id,
+  data=long_dat,
+  family=binomial,
+  corstr="ar1",
+  scale.fix=F
+)
+
+
+# Extract coefficients and SEs
+sum_bin <- summary(gee_model)
+beta_hat <- sum_bin$coefficients[,"Estimate"]
+se_model <- sum_bin$coefficients[,"Std.err"]
+se_robust <- sqrt(diag(sum_bin$cov.scaled)) # Use cov.scaled for sandwich
+
+# Compute bias correction factor: sqrt(N / (N - p))
+p<- length(coef(gee_model))
+N<- 180
+bias_correction_factor <- sqrt(N/(N-p))
+
+# Apply correction
+se_corrected <- se_model*bias_correction_factor
+
+
+```
+
+*Your interpretation of correlation, SEs, and conceptual understanding goes here.*
+
+The estimated working correlation is 0.139. The working correlation represents the pairwise correlation between the responses. Empirical correlation represents the within-subject correlation pattern in the data. For lag 1,2,3 the empirical correlation was bigger than the working correlation. After lag 3, empirical correlation becomes negative and is less than the working correlation. The robust and naive SE for the interaction term were both 0.082. The corrected SE was slightly larger at 0.084. No difference between robust and naive SE for all terms in the model indicates the correlation structure was decently specified.
+
+When $N < 40$ , the robust SE is biased downward and nominal SEs are too small. Since robust SE is a sandwich variance estimate, it can underestimate the variance due to not having enough clusters. Naive SE comes directly from the model. Robust SE is a sandwich estimate and provides valid SE even when assumed model for the covariance among the repeated measures is incorrect. If working correlation structure is misspecified, the robust SE is still valid. GEE yields consistent estimates of $\beta$ coefficients and their variances even when covariance structure is misspecified. This is because $\hat{\beta}$ is a consistent estimator of $\beta$. Additionally, the loss of efficiency from incorrect correlation structure is inconsequential for large sample sizes.
+
+GEE is semiparametric because the estimating equations are derived without knowing the fully specified joint distribution of a subject's observations.
+
+```{r}
+#| label: gee-empirical-corr
+
+
+# Compute empirical residual correlations by lag
+# Hint: For lag h, create pairs (visit_j, visit_{j+h}) for all valid j
+# Use lead() to shift residuals, then correlate across all pairs from all subjects
+# Note: Lag 5 will have only N pairs (visit 0→5 for each subject), while lag 1 has 5N pairs
+# Pool all subject pairs together and compute one correlation per lag
+
+# Extract Pearson residuals and merge back to data
+res_df <- data.frame(
+  id    = long_dat$id,
+  visit = long_dat$visit,
+  res   = residuals(gee_model,type="pearson")
+)
+
+compute_empirical_corr_by_lag <- function(df, max_lag) {
+  results <- numeric(max_lag)
+
+  for (lag in 1:max_lag) {
+    df_lagged <- df %>%
+      group_by(id) %>%
+      arrange(visit) %>%
+      mutate(residual_lead = lead(res, lag)) %>%
+      ungroup() %>%
+      filter(!is.na(residual_lead))
+
+    # Correlation pooling all subjects and all valid visit pairs
+    results[lag] <- cor(df_lagged$res, df_lagged$residual_lead)
+  }
+  return(results)
+}
+corr_vector <- compute_empirical_corr_by_lag(res_df, 5)
+corr_df <- data.frame(
+  lag = 1:5,
+  empirical_corr = corr_vector
+)
+corr_df |>
+  kable(digits=3)
+
+
+```
+
+```{r}
+#| label: gee-coef-table
+
+
+# Display formatted coefficient table with all three SE types
+names(beta_hat) <- rownames(sum_bin$coefficients)
+
+results_tibble <- tibble(
+  term = names(beta_hat),
+  estimate = round(exp(beta_hat),3),
+  se_model = round(se_model,3),
+  se_robust = round(se_robust,3),
+  se_corrected = round(se_corrected,3)
+)
+
+results_tibble |>
+  kable(
+    format = "latex", # Important for PDF output
+    caption = "Model Coefficient Estimates and Standard Errors",
+    col.names = c("Term", "Estimate (e^β)", "SE (Model)", "SE (Robust)", "SE (Corrected)"),
+    booktabs = TRUE, # Looks cleaner
+    linesep = "" # Avoids extra spacing between rows
+  ) |>
+  kable_styling(
+    latex_options = c("striped", "hold_position"),
+    full_width = FALSE
+  )
+
+```
+
+------------------------------------------------------------------------
+
+### Sensitivity to correlation structure *(9 pts)*
+
+> **Question.** Compare independence, exchangeable, and AR-1 working structures by reporting their estimated working correlations and the treatment-control difference in predicted remission probabilities at visits 0, 2, and 5. Hold covariates at `baseline_stress = 0`, `dose_dev = 0`, and the most common clinic. Which structure best balances fit and interpretability? Support your choice by comparing the estimated correlations to the data-generating mechanism (subjects truly have random intercepts *and* slopes, so correlations start near exchangeable but taper with lag) and examining whether substantive conclusions change. How sensitive is the marginal treatment contrast across the three structures?
+
+**Tasks:**
+
+1.  (CODE) Extract working correlations from all three models
+2.  (CODE) Compute empirical within-subject correlations by lag using Pearson residuals (reuse from Section 3.1)
+3.  (CODE) Create a plot showing: X-axis: Lag (1, 2, 3, 4, 5), Y-axis: Correlation, Points: Empirical correlations by lag (from Section 3.1), Horizontal line: Exchangeable working α (constant across all lags), Curve: AR-1 working α\^lag (exponential decay). This visualizes how well each structure approximates the empirical correlation decay.
+4.  (CODE) Generate predicted probabilities at visits 0, 2, and 5 for specified covariate values
+5.  (CODE) Calculate treatment-control gaps at each visit for each correlation structure
+6.  (WRITE) Compare the estimated working correlations and discuss which best matches the data structure. Your data were generated with both random intercepts and random slopes (early lags look roughly exchangeable but longer lags taper). Why might AR-1 still fit reasonably well? Under what data-generating mechanism would you expect empirical correlations to decay rapidly by lag?
+7.  (WRITE) Assess sensitivity of treatment effects across correlation structures and recommend which to use
+
+```{r}
+#| label: gee-preds
+
+
+# Extract working correlations
+alphacorrs<-c(alpha1<-gee_model$geese$alpha,alpha2<-gee_ar1$geese$alpha,0)
+
+# Create prediction grid
+grid_gee <- expand_grid(
+  arm = c("Tx", "Control"),
+  dose_dev = 0,
+  baseline_stress = 0,
+  clinic = "C",
+  visit = c(0, 2, 5)
+) %>%
+  mutate(time_c = visit - mean(long_dat$visit)
+         )
+# Generate predictions for each model
+gee_model_preds <- predict(gee_model, newdata = grid_gee, type = "response")
+gee_ind_preds <- predict(gee_ind,newdata=grid_gee,type="response")
+gee_ar1_preds <- predict(gee_ar1,newdata=grid_gee,type="response")
+
+
+# Calculate treatment-control contrasts
+grid_gee$pred_gee_exch <- gee_model_preds
+grid_gee$pred_gee_ind  <- gee_ind_preds
+grid_gee$pred_gee_ar1  <- gee_ar1_preds
+
+contrasts_df <- grid_gee %>%
+  dplyr::select(visit, arm, pred_gee_exch, pred_gee_ind, pred_gee_ar1) %>%
+  pivot_wider(
+    names_from = arm,
+    values_from = c(pred_gee_exch, pred_gee_ind, pred_gee_ar1)
+  ) %>%
+  mutate(
+    exch_contrast = pred_gee_exch_Tx - pred_gee_exch_Control,
+    ind_contrast  = pred_gee_ind_Tx  - pred_gee_ind_Control,
+    ar1_contrast  = pred_gee_ar1_Tx  - pred_gee_ar1_Control
+  )
+
+```
+
+*After lag 3, the correlation starts rapidly decaying and is not hovering around the reference line equal to* $\alpha$*. For this reason, I suggest an AR(1) correlation structure. The treatment-control gaps are displayed for each visit. The gaps were quite similar for each correlation structure so that does not really help us determine which correlation structure to use.*
+
+*AR-1 can still fit reasonably well because GEE is estimating marginal effects and it's only required to get the model for the mean response correct. Empirical correlations would decay rapidly by lag in AR(1) since observations farther apart in time will be less correlated with each other.*
+
+```{r, fig.height=3, fig.width=4.5}
+#| label: gee-alpha-comparison
+
+
+# Plot empirical correlations vs. working correlations
+alpha <- gee_model$geese$alpha
+alpha
+# Plot empirical correlations vs. working correlations
+ggplot(corr_df, aes(x = lag, y = empirical_corr)) +
+  geom_point(size = 3) +
+  geom_hline(yintercept = 0.1392, linetype = "dashed") +
+  labs(
+    x = "Lag",
+    y = "Empirical Correlation (Pearson residuals)",
+    title = "Empirical Correlogram vs. Exchangeable Model"
+  ) +
+  theme_minimal()
+
+
+```
+
+```{r}
+#| label: gee-alpha-table
+
+
+# Display working correlations
+corrstructures<- c(gee_model$corstr,gee_ar1$corstr,gee_ind$corstr)
+# Create the data frame
+comparison_df <- data.frame(
+  Correlation_Structure = corrstructures,
+  Estimated_Alpha = alphacorrs
+) 
+
+comparison_df |> 
+  kable(digits=3)
+
+
+```
+
+```{r}
+#| label: gee-pred-table
+
+# Display predicted probabilities by structure
+grid_gee |>
+  dplyr::select(arm, visit, pred_gee_exch,pred_gee_ind,pred_gee_ar1) |>
+  dplyr::arrange(visit,arm) |>
+  kable(digits=3)
+
+# print treatment-control gaps for each structure
+contrasts_df |>
+  dplyr::select(visit,exch_contrast,ind_contrast,ar1_contrast)|>
+  kable(digits=3)
+
+
+```
+
+------------------------------------------------------------------------
+
+## Generalized Linear Mixed Models (GLMM) (29 pts)
+
+### Random-intercept logistic GLMM *(9 pts)*
+
+> **Question.** Fit a GLMM with a subject-level random intercept using the same fixed effects as in Section 3 (`remission ~ time_c * arm + baseline_stress + dose_dev + clinic + (1 | id)`). Report the estimated variance component and calculate the implied intraclass correlation on the logistic scale: ICC = $\sigma^2_b / (\sigma^2_b + \pi^2/3)$, where $\sigma^2_b$ is the variance of the random intercept (some texts use $\sigma^2_u$ for the same quantity). Compare the magnitude and interpretation of the treatment effect estimate to the GEE results from Section 3. **Apply the Zeger et al. (1988) attenuation formula** to convert the conditional (subject-specific) treatment effect to an approximate marginal (population-average) effect.
+
+**Note:** If you encounter convergence warnings, try increasing `maxfun` in the control argument or using `optimizer = "bobyqa"`.
+
+**Tasks:**
+
+1.  (CODE) Fit the random-intercept GLMM using `lme4::glmer()`
+2.  (CODE) Extract the random intercept variance component $\sigma^2_b$ where: $\sigma^2_b$ is the VARIANCE of the random intercept (not SD). Extract using: `VarCorr(glmm_ri)$id[1,1]` or `attr(VarCorr(glmm_ri)$id, "stddev")^2`
+3.  (CODE) Calculate the ICC on the logistic scale
+4.  (CODE) Extract the treatment effect log-OR and 95% CI, then exponentiate to get the conditional OR
+5.  (CODE) Apply the Zeger approximation: $\beta^{\text{marg}} \approx \beta^{\text{cond}} / \sqrt{1 + 0.346 \times \sigma_b^2}$ to obtain an approximate marginal log-OR and OR. Calculate the attenuation percentage as: $(1 - 1/\sqrt{1 + 0.346\sigma^2_b}) \times 100\%$. Example: if σ²_b = 4, then $\sqrt{1 + 0.346 \times 4} = 1.544$, so attenuation = $(1 - 1/1.544) \times 100\% = 35.2\%$. **Important**: The Zeger approximation is ONLY valid for: Logistic regression (not other GLMs), Random intercept models (not random slope models). For random slope models, you must use simulation-based marginalization (Section 4.4) to obtain marginal effects.
+6.  (CODE) Obtain the subject-specific random intercept BLUPs and create a Q-Q plot (or density plot) to assess normality/shrinkage
+7.  (WRITE) Report and interpret the variance component, ICC, and BLUP diagnostics
+8.  (WRITE) Compare the GLMM conditional OR, the Zeger-approximated marginal OR, and the GEE OR from Section 3.1. Explain sources of agreement/disagreement. Calculate the attenuation factor and interpret the degree of heterogeneity using this scale: 0-20% (mild), 20-40% (noticeable), 40-60% (substantial), \>60% (severe)
+9.  (WRITE) **Critical distinction**: Explain that GLMM $\beta$ estimates conditional (subject-specific) effects—"the treatment effect for a given individual"—whereas GEE estimates marginal (population-average) effects—"the treatment effect averaging over the entire population." These answer different scientific questions and both are valid
+
+```{r}
+#| label: glmm-ri
+
+
+# Fit random-intercept GLMM
+glmm_ri <- lme4::glmer(remission ~ time_c * arm + baseline_stress + dose_dev + clinic + (1 | id),data=long_dat,family=binomial(link="logit"),control=glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=100000)))
+
+# Extract variance component (ensure it's VARIANCE not SD)
+variance_component <- VarCorr(glmm_ri)$id[1,1] 
+cat("variance component:",round(variance_component,3))
+# Calculate ICC
+icc <- icc(glmm_ri)
+icc |>
+  kable(digits=3)
+
+# Extract treatment effect
+beta_cond <- fixef(glmm_ri)["armTx"]
+
+# Apply Zeger attenuation formula
+var_u <- attr(VarCorr(glmm_ri)[[1]], "stddev")^2
+sigma_b <- sqrt(var_u)
+attenuation_factor <- sqrt(1 + 0.346 * var_u)
+beta_marg <- beta_cond / attenuation_factor
+attenuation <- (1-1/attenuation_factor)*100
+
+cat("Conditional β (GLMM):", round(beta_cond, 3), " → OR =", round(exp(beta_cond), 2), "\n")
+cat("Marginal β (approx):", round(beta_marg, 3), " → OR =", round(exp(beta_marg), 2), "\n")
+cat("Attenuation factor:", round(attenuation_factor, 3), "\n")
+cat("Attenuation percentage:", round(attenuation,2),"\n")
+
+```
+
+```{r}
+#| label: glmm-ri-blups
+
+
+# Extract BLUPs and create diagnostics (e.g., QQ plot)
+alphas <- lme4::ranef(glmm_ri)
+
+blup_vector <- alphas$id[["(Intercept)"]]
+
+# 2. Create the QQ Plot
+# qqnorm() generates the plot
+qqnorm(blup_vector, 
+       main = "QQ Plot: Random Intercepts (id)",
+       xlab = "Theoretical Quantiles",
+       ylab = "Sample Quantiles (BLUPs)")
+
+# 3. Add the reference line
+# qqline() adds the line that the points should follow for a Normal distribution
+qqline(blup_vector, col = "red")
+
+```
+
+The variance component is 0.724. This is the estimated variance of the random intercept. Higher variance means that the random variance varies quite a bit between subjects. ICC is a measure of the degree of clustering in the data. The ICC was 0.180, which implies that 18% of total variance was due to between-subject differences. The GEE OR was 1.38, which is a marginal OR. The conditional OR was 1.45. In this case, the conditional OR was 5.1% greater than the marginal OR, indicating only mild disagreement between conditional and marginal ORs. It could have been smaller since the variance was 0.724. Attenuation was 10.57%. The QQ plot of the random intercept BLUPs follows an approximate 45 degree straight line through the origin, indicating no substantial departures from normality.
+
+GLMM models data at the subject level. $\beta$ for GLMM represents the effect on an individual whereas GEE models data at the population level. Correlation between an individual's measurements is generated by the random effect in GLMM. $\beta$ for GEE represent the effect of the predictors averaged across all individuals that have the same predictor values. GEE does not use random effects but rather models correlation at the marginal level.
+
+**Expected Numerical Ranges:**
+
+For this assignment, expect the following relationships (your specific numbers will vary):
+
+-   Conditional OR typically 10-50% larger than marginal OR (depends on $\sigma^{2}_{b}$)
+-   Zeger approximation typically within 5-15% of GEE marginal OR (both are approximations)
+-   Simulation-based marginal vs. GEE: typically within 2-5 percentage points in probability
+-   If differences exceed these ranges, double-check your calculations, but some variation is expected due to: (a) Different estimation methods (ML vs. GEE), (b) Working correlation structure differences, (c) Approximation error in Zeger formula
+
+------------------------------------------------------------------------
+
+### Random slopes, likelihood ratio test, and convergence diagnostics *(11 pts)*
+
+> **Question.** Extend the GLMM by allowing subject-specific slopes on `time_c` (i.e., `(1 + time_c | id)`). Compare it with the random-intercept model via a likelihood ratio test (LRT) and interpret the **correlation** between intercepts and slopes. The LRT tests a variance component on the boundary of the parameter space, so the p-value should be interpreted cautiously. Check for convergence issues and troubleshoot if necessary. Explain what the sign of the intercept-slope correlation implies clinically.
+
+**Tasks:**
+
+1.  (CODE) Fit the random-slope GLMM
+2.  (CODE) Check convergence using `glmm_rs@optinfo$conv$lme4$messages` and report any warnings. If NULL or empty: convergence successful, report "No convergence warnings". If warnings present: report the specific warning message(s).
+3.  (CODE) If convergence warnings appear: (a) rescale `time_c` by dividing by its SD (this is a numerical stability trick even for centered variables), (b) refit, (c) compare estimates (note: the rescaled coefficients for time_c will differ by the scaling factor, but ORs should be similar)
+4.  (CODE) Perform LRT comparing the random-intercept and random-slope models using `anova()`
+5.  (CODE) Extract variance components (intercept SD, slope SD) and their correlation
+6.  (WRITE) Report convergence diagnostics. Explain when a "singular fit" warning (variance component near zero) indicates a real boundary vs. a convergence artifact. If your model converged without warnings, state "No convergence issues encountered" and briefly note the optimizer used. You do NOT need to demonstrate troubleshooting if there are no issues.
+7.  (WRITE) Report LRT results and interpret with appropriate caution about boundary testing. Note that the LRT tests a variance component on the boundary of the parameter space (H₀: $\sigma^2_\text{slope} = 0$). Theoretically, the null distribution is a 50:50 mixture of $\chi^2_0$ and $\chi^2_1$ , but for this assignment: Report the p-value from `anova()` as-is (using standard $\chi^2$ approximation), Note in your interpretation that "the true p-value may be somewhat larger than reported", Do NOT manually adjust the p-value.
+8.  (WRITE) Interpret the correlation between random intercepts and slopes. A positive correlation $\rho(b_0, b_1) > 0$ implies that subjects with higher baseline outcomes experience faster rates of change. Describe a clinical scenario where you would expect positive vs. negative correlation and explain the scientific mechanism
+9.  (WRITE) Explain what the correlation sign tells you about subject heterogeneity in this study
+
+```{r}
+#| label: glmm-rs
+
+
+# Fit random-slope GLMM
+glmm_rs <- glmer(
+  remission ~ time_c * arm + baseline_stress + dose_dev + clinic + 
+              (1 + time_c | id), # Subject-specific random intercept and slope
+  data = long_dat,
+  family = binomial(link = "logit"))
+
+# Check convergence
+glmm_rs@optinfo$conv$lme4$messages
+
+
+# If needed: rescale and refit
+long_dat$time_c_scaled <- scale(long_dat$time_c) # scaling time_c
+
+# refit the model
+glmm_rs_scaled <- glmer(
+  remission ~ time_c_scaled * arm + baseline_stress + dose_dev + clinic + 
+              (1 + time_c_scaled | id), # Subject-specific random intercept and slope
+  data = long_dat,
+  family = binomial(link = "logit"),
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000)))
+
+# Checking convergence again
+#glmm_rs_scaled@optinfo$conv$lme4$messages
+
+# Perform LRT
+anova(glmm_ri,glmm_rs_scaled,test="Chisq") |>
+  kable(digits=3)
+
+# Extract variance components and correlation
+ran_slopes <- ranef(glmm_rs_scaled)$id %>%
+  tibble::rownames_to_column("id") %>%
+  rename(int = `(Intercept)`, slope = time_c_scaled)
+
+ran_slopes %>%
+  summarise(sd_intercept = sd(int), 
+            sd_slope = sd(slope), 
+            cor_int_slope = cor(int, slope)) |>
+  kable(digits=3)
+
+
+```
+
+*Your interpretation of convergence, LRT, correlation, and clinical meaning goes here.*
+
+The model failed to converge so time_c was scaled but it still did not converge to then optimizer was changed to "bobyqa" and finally the model converged. Since the model did not converge even after rescaling a predictor, this is a sign that the warning is a real boundary and not just a convergence artifact. The p-value for the LRT was 0.02, which is less than 0.05. We reject the null hypothesis. Including a random slope improves the fit of our model. The correlation between intercept and slope is -0.495 implying that patients with higher remission probability have slower rate of improvement.
+
+Getting a positive correlation would mean patients with worse disease improve more over time. Getting a negative correlation would mean healthier patients deteriorate more rapidly over time. An example for positive correlation is patients with high cholesterol. These patients would show the most improvement. A more negative slope means faster improvement and the random intercept captures the baseline cholesterol. ALS patients are an example for negative correlation. Patients with mild ALS would get worse more quickly than patients who already have a more advanced stage of ALS. The more positive slope would show faster disease progression and the random intercept would capture the baseline severity of ALS.
+
+------------------------------------------------------------------------
+
+### Subject-specific predictions *(6 pts)*
+
+> **Question.** Select three participants representing different remission histories: one with low average remission (≈5th percentile across all participants), one with median average remission (50th percentile), and one with high average remission (≈95th percentile). For each participant, compute their average observed remission across all six visits. Use the random-slope GLMM to produce subject-specific remission trajectories for these three individuals. Create a table showing predicted probabilities at each visit for each participant. Explain how these subject-specific predictions differ from population-average predictions from GEE.
+
+**Tasks:**
+
+1.  (CODE) Identify three representative participants based on their mean remission rates across visits
+2.  (CODE) Generate subject-specific predictions using `predict()` with the random-slope model (includes BLUPs by default)
+3.  (CODE) Create a table showing predicted probabilities across all visits for the three participants
+4.  (WRITE) Describe the three participants and their trajectories. Explain how random effects personalize predictions by capturing unmeasured individual characteristics (genetics, adherence, social support, etc.)
+5.  (WRITE) Contrast subject-specific (GLMM) vs. population-average (GEE) predictions. Which would you use to answer: (a) "Should I prescribe to Patient X?" (b) "What percent of the population will benefit?"
+
+```{r}
+#| label: glmm-profiles
+
+
+# Identify three representative participants
+# Hint: For each person, calculate mean(remission) across their 6 visits
+# Then select participants at 5th, 50th, and 95th percentiles of these means
+# Example approach:
+#   1. Group by id, calculate mean_remission = mean(remission)
+#   2. Arrange by mean_remission
+#   3. Use slice() to pick rows near 5th percentile, median, and 95th percentile
+mean_remission <- long_dat %>%
+  group_by(id) %>%
+  summarise(mean_remission = mean(remission, na.rm = TRUE)) %>%
+  arrange(mean_remission)
+
+# 2. Identify percentile positions
+n <- nrow(mean_remission)
+
+p5_id  <- mean_remission$id[round(0.05 * n)]
+p50_id <- mean_remission$id[round(0.50 * n)]
+p95_id <- mean_remission$id[round(0.95 * n)]
+
+# 3. Output
+representative_ids <- c(`5th` = p5_id,
+                        `50th` = p50_id,
+                        `95th` = p95_id)
+
+#representative_ids
+
+
+# Generate subject-specific predictions
+# Use predict(glmm_rs, newdata = ..., type = "response")
+newdat <- long_dat |>
+  dplyr::filter(id %in% representative_ids) |>
+  dplyr::select(id, time_c_scaled, arm, baseline_stress, dose_dev, clinic)
+
+newdat$pred <- predict(glmm_rs_scaled, newdata = newdat, type = "response")
+
+
+# Create summary table
+
+# Plot predicted probabilities over time
+ggplot(newdat, aes(x = time_c_scaled, y = pred, color = as.factor(id))) +
+  geom_line(size = 1.2) +        # line for each subject
+  geom_point(size = 2) +         # points at each time
+  labs(
+    x = "Time (scaled)",
+    y = "Predicted Probability of Remission",
+    color = "Subject ID",
+    title = "Subject-Specific Predicted Trajectories"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(hjust = 0.5)
+  )
+
+```
+
+*Your interpretation of personalized trajectories goes here.*
+
+ID 72 rapidly increases in predicted remission rate. This is the 5th percentile subject. ID 112 was the 50th percentile subject. This one increases in prediction remission rate but not as fast as ID 72. ID 175 was the 95th percentile subject. This subject's predicted remission rate stayed at the same value across time.
+
+Including subject-specific random effects is what allows us to account for heterogeneity between individuals by capturing unmeasured individual characteristics. We assume that the random effects account for all the within-subject correlation present in the data.
+
+The GEE was a population average effect averaging across all subjects whereas the GLMM is a within-subject effect. GLMM should be used to answer if you should prescribe to Patient X and GEE should be used to determine what percent of the population will benefit.
+
+\newpage
+
+```{r}
+#| label: profile-table
+
+
+# Display trajectory table
+newdat |>
+  kable(digits=3)
+
+```
+
+------------------------------------------------------------------------
+
+### Preliminary synthesis *(3 pts)*
+
+**Conceptual Background:**
+
+GLMMs naturally give **conditional (subject-specific)** effects—"the effect for a given individual." But policymakers often want **marginal (population-average)** effects—"the average effect across the population."
+
+In **linear models**, conditional = marginal (they collapse). But in **non-linear models** (logistic, Poisson, etc.), they differ because of **Jensen's inequality**: the average of non-linear functions ≠ the function of averages.
+
+**The Problem:** You fitted a GLMM, which estimates conditional effects. How do you extract marginal effects from it?
+
+**The Mathematical Challenge:**
+
+The GLMM gives you the conditional probability: $$P(Y_{ij} = 1 \mid b_i) = \text{expit}(X_{ij}^\top \beta + Z_{ij}^\top b_i)$$
+
+To get the marginal (population-average) probability, you need to integrate out the random effects: $$P(Y_{ij} = 1) = \int \text{expit}(X_{ij}^\top \beta + Z_{ij}^\top b_i) \cdot f(b_i \mid \hat{D}) \, db_i$$
+
+where $f(b_i \mid \hat{D})$ is the estimated distribution of random effects, $N(0, \hat{D})$.
+
+**The Problem with This Integral:** For logistic models, this integral has no closed-form solution. You can't solve it analytically.
+
+**The Solution: Monte Carlo Integration**
+
+We approximate the integral numerically using **Monte Carlo simulation**: 1. Draw many samples $b_i^{(1)}, b_i^{(2)}, \ldots, b_i^{(M)}$ from $N(0, \hat{D})$ (simulating heterogeneity in the population) 2. For each draw, compute the predicted probability: $p^{(m)} = \text{expit}(X_{ij}^\top \beta + Z_{ij}^\top b_i^{(m)})$ 3. Average across all draws: $\hat{P}(Y_{ij} = 1) \approx \frac{1}{M} \sum_{m=1}^M p^{(m)}$
+
+As $M \to \infty$, this Monte Carlo average converges to the true integral. With $M = 5,000$ draws, the approximation is highly stable.
+
+This gives you the **population-average probability**—the same estimand GEE targets directly.
+
+**Why does this matter?** It lets you: - Compare GLMM and GEE on the same scale (both marginal) - Verify that different methods (GEE's working correlation vs. GLMM's random effects) reach similar answers - Choose the appropriate estimand for your research question - Understand that **simulation-based marginalization is the bridge** from conditional to marginal estimands in non-linear models
+
+> **Question.** Using the GLMM, simulate population-average remission probabilities at visit 5 by integrating over the fitted random effects (draw ≥ 5,000 random-effect samples from $N(0, \hat{D})$). Compare this simulation-based marginal probability to the GEE prediction. Note: This question is a bridge to the Synthesis section where you will demonstrate understanding of marginal vs. conditional effects.
+
+**Tasks:**
+
+1.  (CODE) For the random-slope GLMM, extract the variance-covariance matrix $\hat{D}$ of random effects: `D_matrix <- as.matrix(VarCorr(glmm_rs)$id)`. This returns a 2×2 matrix for random intercepts and slopes.
+2.  (CODE) Draw at least 5,000 samples of $(b_{0i}, b_{1i})$ from $N(0, \hat{D})$ (5,000-10,000 recommended; you may use fewer if computational time is prohibitive, but state the number used and note that more draws = more stable estimates)
+3.  (CODE) For visit 5 at reference covariates (`baseline_stress = 0`, `dose_dev = 0`, most common clinic), compute the fixed-effects linear predictor for both arms
+4.  (CODE) For each random-effect draw, add the random effects to the linear predictor: Fixed effect contribution: $X^T \beta$ (from `fixef(glmm_rs)`), Random effect contribution: $b_0 + b_1 \cdot \text{time}_c$ where time_c = 5 - mean(0:5) = 5 - 2.5 = 2.5 for visit 5. Apply the inverse logit, and average over draws to get marginal probabilities. **Intuition:** Each draw represents a "hypothetical person" from the population. Some have positive $b_0$ (higher baseline), some negative (lower baseline). By averaging their predictions, we get the population average—what GEE estimates directly.
+5.  (WRITE) Compare the simulation-based marginal probabilities to the GEE visit-5 predictions from Section 3. Explain why they should be similar (both target population-average effects) but may differ slightly (different estimation approaches and working correlation structures)
+
+```{r}
+#| label: glmm-marginalize
+
+
+# Extract variance-covariance matrix D
+# This captures the population heterogeneity in random intercepts and slopes
+D_matrix <-  as.matrix(VarCorr(glmm_rs)$id)
+#D_matrix - wanted to look at the matrix
+
+
+# Draw random effects
+# Hint: MASS::mvrnorm(n = 5000, mu = c(0, 0), Sigma = D_matrix)
+# Each row is a "hypothetical person" from the population
+random_effects_draws <- MASS::mvrnorm(
+  n = 5000, 
+  mu = c(0, 0), # Mean is c(0, 0) for random effects
+  Sigma = D_matrix
+)
+
+
+# Compute marginal probabilities by simulation
+# For each arm at visit 5:
+#   1. Calculate fixed effect: X'β (use fixef(glmm_rs))
+#   2. For each random effect draw: add b_0 + b_1 * time_c
+#   3. Apply inverse logit: plogis()
+#   4. Average across all draws
+# This averages over population heterogeneity → marginal effect
+
+# extract fixed effects
+fixed_effects <- fixef(glmm_rs)
+
+# 1. Arm = Control (Reference Arm)
+X_arm_Control <- c(
+  `(Intercept)` = 1,
+  `time_c` = 2.5,
+  `armTx` = 0 # Reference category is 0
+  # Include any other fixed effect covariates set to their baseline/mean values
+) 
+
+# 2. Arm = Tx (Treatment Arm)
+X_arm_Tx <- c(
+  `(Intercept)` = 1,
+  `time_c` = 2.5,
+  `armTx` = 1 # Treatment category is 1
+)
+
+# --- Calculation for Arm = Control at Visit 5 ---
+
+# 1. Calculate Fixed Effect Component (X'β)
+# Note: This assumes fixed_effects is correctly ordered/named to match X_arm_Control
+fixed_linear_predictor_Control <- sum(fixed_effects[names(X_arm_Control)] * X_arm_Control)
+
+# 2. Add Random Effect Component (b_0 + b_1 * time_c)
+# random_effects_draws[, 1] is b_0, random_effects_draws[, 2] is b_1
+random_linear_predictor_Control <- random_effects_draws[, 1] + random_effects_draws[, 2] * 2.5
+
+# Total Linear Predictor (for 5000 hypothetical people)
+total_linear_predictor_Control <- fixed_linear_predictor_Control + random_linear_predictor_Control
+
+# 3. Apply Inverse Logit (plogis)
+prob_draws_Control <- plogis(total_linear_predictor_Control)
+
+# 4. Average Across All Draws → Marginal Probability
+marginal_prob_Control <- mean(prob_draws_Control)
+
+
+# --- Calculation for Arm = Tx at Visit 5 ---
+
+# 1. Calculate Fixed Effect Component (X'β)
+fixed_linear_predictor_Tx <- sum(fixed_effects[names(X_arm_Tx)] * X_arm_Tx)
+
+# 2. Add Random Effect Component (b_0 + b_1 * time_c)
+random_linear_predictor_Tx <- random_effects_draws[, 1] + random_effects_draws[, 2] * 2.5
+
+# Total Linear Predictor (for 5000 hypothetical people)
+total_linear_predictor_Tx <- fixed_linear_predictor_Tx + random_linear_predictor_Tx
+
+# 3. Apply Inverse Logit (plogis)
+prob_draws_Tx <- plogis(total_linear_predictor_Tx)
+
+# 4. Average Across All Draws → Marginal Probability
+marginal_prob_Tx <- mean(prob_draws_Tx)
+
+cat("Marginal Probability at Visit 5 (time_c =", 2.5, "):\n")
+cat("Arm = Control (Reference):", round(marginal_prob_Control, 4), "\n")
+cat("Arm = Tx (Treatment):", round(marginal_prob_Tx, 4), "\n")
+
+```
+
+*Discuss the comparison between simulation-based GLMM marginalization and GEE predictions.*
+
+The simulation-based GLMM predictions were generally higher than the GEE predictions. For AR(1) GEE model, visit 5 remission rate for control was 0.519 and 0.686 for Tx group. For simulation-based GLMM marginalization, the predictions were 0.6259 and 0.6977, respectively. GEE estimates the marginal mean. GLMM simulation estimates conditional means and averages across them to get the marginal mean. Typically $\beta$ coefficients in GLMM simulation are larger than GEE $\beta$ coefficients. For this reason, the predictions will be larger for the GLMM simulation, which matches what we found here. Averaging across the random effect shrinks the prediction toward the population mean, which is why the predictions for both methods end up being similar.
+
+------------------------------------------------------------------------
+
+## Synthesis: Marginal vs. Conditional Effects (15 pts)
+
+This section explicitly tests concepts from Lecture 16 on contrasting marginal and mixed models. You will demonstrate understanding of **what estimand each model targets** and **when to use each**.
+
+> **Question.** Demonstrate your understanding of the fundamental distinction between marginal and conditional effects in non-linear models. This is the core conceptual challenge of longitudinal data analysis with GLMs.
+
+**Tasks:**
+
+1.  (WRITE) Write out the mathematical definition of what each model estimates:
+    -   GEE: $\beta$ where $g(\mu_{ij}) = X_{ij}^\top\beta$ with $\mu_{ij} = E(Y_{ij})$ (marginal mean)
+    -   GLMM: $\beta^*$ where $g\{E(Y_{ij}|b_i)\} = X_{ij}^\top\beta^* + Z_{ij}^\top b_i$ (conditional mean)
+2.  (WRITE) Explain in plain language suitable for a clinician collaborator (not mathematical notation, but you may use accessible terms like "S-curve" or "averaging"). Imagine explaining to someone who took one statistics course but is not a statistician. Use the concept of **attenuation**: individual S-curves (each with slope parameter $\beta^*$) average to a flatter S-curve with smaller slope parameter $\beta$ due to heterogeneity. This is NOT confounding; it's a mathematical consequence of Jensen's inequality
+3.  (WRITE) Explain why the marginal OR from GEE is smaller than the conditional OR from GLMM even though there are no unmeasured confounders in the simulation. Use the term "non-collapsibility" in your answer. Compare to linear models where $\beta = \beta^*$ (no attenuation)
+4.  (WRITE) State which stakeholder (FDA regulator, clinician, patient, health policy maker) would use each estimate and why. Be specific:
+    -   **FDA question**: "What's the population risk/benefit if we approve this drug?" → Use \_\_\_
+
+    -   **Clinician question**: "Will this help my patient sitting in front of me?" → Use \_\_\_
+
+    -   **Patient question**: "Given my characteristics, what is my chance of remission?" → Use \_\_\_
+
+    -   **Policy question**: "What percent of the population will benefit?" → Use \_\_\_
+
+$\beta$ in GEE is describing the effects of covariates on changes in population mean response over time.
+
+$\beta^{*}$ in GLMM are fixed effects describing the effects of covariates on changes in an individual's response over time.
+
+Non-collapsibility means the marginal and conditional OR are not equal despite no confounders for binary outcomes. This happens when the link function is non-linear. For example, in logistic regression, individual S-curves with slope parameter $\beta^*$ average to a flatter S-curve with a smaller slope parameter $\beta$ due to heterogeneity. Averaging curved lines gives us a different curve than the average line.
+
+Since the link function is non-linear, we experience non-collapsibility in logistic regression thereby forcing the marginal OR to be attenuated. $\beta$ is always attenuated toward 0 when compared with $\beta^*$. For linear models, $\beta$ can be interpreted the same way on both models since $E(Y_i) = E[E(Y_i|b_i)]$. This equality does not hold when the link function is not linear. We would be required to integrate a non-linear function of $b_i$ to get the marginal mean. The link function is not preserved. In linear models, there is no attenuation.
+
+*The FDA question would use marginal mean since FDA would want to know risk/benefit analysis in the target population. Clinician should use conditional mean since the clinician is examining treatment effect for a patient and that's subject specific. The patient question is also subject-specific so should use a conditional mean. The policy question is examining a population effect so we would have to use a marginal mean.*
+
+------------------------------------------------------------------------
+
+## Peer Review (7 pts)
+
+After the HW has been turned in, review two classmates' submissions (≈ 100-150 words each). You do not need to provide a numeric score, but instead provide comments that address:
+
+-   Model specification accuracy
+-   Clarity of interpretation (especially marginal vs. conditional distinction)
+-   Diagnostic reasoning
+-   Conceptual understanding of estimands
+-   Organization and visuals
+
+You will be randomly assigned your peer assessments in Canvas. Provide your comments in Canvas as well as a brief overall summary sentence for each peer. Please be thorough and constructive. Focus especially on whether they correctly distinguished between marginal and conditional effects in their interpretations.
+
+------------------------------------------------------------------------
+
+## Formatting & Reproducibility (3 pts)
+
+-   Knit runs without error
+-   Figures and tables properly labeled and referenced in text
+-   Seed set at top
+-   File readable and well-organized
+-   Code folded in rendered output (you may selectively show 1-2 critical code chunks if they illustrate an important point, but the bulk should be folded)
+-   Tables formatted using `knitr::kable()`, `gt()`, or any other function that produces clean HTML output (focus on readability—include appropriate column names, rounding, and units)
+-   Interpretations clearly separated from code chunks
+
+------------------------------------------------------------------------
+
+## Reminders
+
+-   **Use robust SEs from GEE for all inference** (not naive SEs), unless the question specifically asks you to report or compare naive, robust, and bias-corrected SEs for pedagogical purposes
+-   **Interpret GLM coefficients on the appropriate scale** (log-odds for logistic, log-rate for Poisson)
+-   **When reporting treatment effects**: Present ORs (exponentiated) with 95% CIs unless the question specifically asks for log-ORs. Exception: When comparing across models, showing both log-OR and OR can be helpful
+-   Check overdispersion for count models using Pearson dispersion statistic
+-   Random effects require subject-level IDs as factors
+-   Keep code folded in final submission but ensure reproducibility
+-   `time_c` is centered time for easier interpretation of main effects
+-   **CRITICAL**: Always state whether you are interpreting a **conditional (subject-specific)** or **marginal (population-average)** effect
+-   **Conditional OR** ≠ **Marginal OR** for non-linear models—this is not a bug, it's a feature!
+-   The Zeger approximation $\beta^{\text{marg}} \approx \beta^{\text{cond}} / \sqrt{1 + 0.346 \sigma_b^2}$ only applies to logistic random-intercept models
+-   Note: Your specific numbers will differ from classmates due to different random seeds
+
+------------------------------------------------------------------------
+
+## Point Distribution Summary
+
+| Section                                    | Points  |
+|--------------------------------------------|---------|
+| 1\. Exploratory Analysis                   | 3       |
+| 2\. GLM (2.1: 11, 2.2: 5, 2.3: 8)          | 24      |
+| 3\. GEE (3.1: 10, 3.2: 9)                  | 19      |
+| 4\. GLMM (4.1: 9, 4.2: 11, 4.3: 6, 4.4: 3) | 29      |
+| 5\. Synthesis                              | 15      |
+| 6\. Peer Review                            | 7       |
+| 7\. Formatting                             | 3       |
+| **TOTAL**                                  | **100** |
