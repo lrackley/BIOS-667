@@ -1,6 +1,6 @@
 ---
 title: "HW1"
-author: "Anonymous ;)"
+author: "Lauren Rackley"
 format: html
 editor: visual
 ---
