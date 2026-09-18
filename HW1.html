@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Anonymous ;)">
+
+<title>HW1</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="HW1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="HW1_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="HW1_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="HW1_files/libs/quarto-html/popper.min.js"></script>
+<script src="HW1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="HW1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="HW1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="HW1_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="HW1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="HW1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="HW1_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">HW1</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Anonymous ;) </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="instructions" class="level1">
+<h1>Instructions</h1>
+<p>Please compute the following questions to the best of your ability. Be thorough in explaining your reasoning on how you arrived at your answers, and present your results in a manner that would make it easy for a statistician colleague to follow. Do not copy and paste raw output from R, and use properly formatted tables, informative and labeled figures, and well defined notation where applicable. Explain and justify any assumptions you make. You may use AI to assist you in answering the following questions. AI is used, provide the AI tool that was used, the prompt, and the output from the prompt. You do not need to provide additional code or output.</p>
+</section>
+<section id="question-1" class="level1">
+<h1>Question 1</h1>
+<p>Read the study and data description in problem 5.1 from Chapter 5 of the textbook. The two groups will be identified by <span class="math inline">\(i = 1\)</span> for placebo and <span class="math inline">\(i = 2\)</span> for high dose. The repeated measures will be identifed by <span class="math inline">\(j = 1,\ldots, 5\)</span>. The obsevation times (0, 6, 12, 20, 24 months) will be denoted <span class="math inline">\(t_{ij}\)</span> . The cell means in the <span class="math inline">\(2 \times 5\)</span> layout will be denoted <span class="math inline">\(\eta_{ij}\)</span>. The data is provided in .</p>
+<p>Use REML and Wald tests whenever possible and valid. Assume a common (for both groups) unstructured matrix for the covariance of the response vector. For hypothesis testing, describe your method, give the value of the test statistic, the degrees of freedom (if applicable) and the p-value.</p>
+<p>There are some missing outcomes in this problem which, depending on the reason for missingness, may lead to biased estimation. <strong>Ignore that aspect</strong> in this problem; missing data will be discussed in more detail later in this class.</p>
+<section id="a" class="level3">
+<h3 class="anchored" data-anchor-id="a">(a)</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># read in data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>choldata <span class="ot">&lt;-</span> <span class="fu">read.table</span>(<span class="st">"~/Desktop/Fall 2025/BIOS 667/Homework/cholesterol.dat"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">header=</span>T)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Used ChatGPT:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># how do i make a table in R with mean, SD, and var for each treatment group? my data is in wide format. Y1,Y2,Y3,Y4,Y5 is cholesterol dat different time points, baseline,6,12,20,24 months and i have group =1,2. High-Dose and Placebo respectively</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gtsummary) <span class="co"># for making summary tables</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2) <span class="co"># for plotting</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nlme) <span class="co"># for fitting linear and non-linear mixed effect models</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4) <span class="co"># fitting linear mixed effects models</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest) <span class="co"># testing linear mixed effects models</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom.mixed) <span class="co"># for tidying mixed models</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra) <span class="co"># for nice tables</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car) <span class="co"># for testing linear hypotheses</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: your data frame is "chol"</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Variables: group, Y1, Y2, Y3, Y4, Y5</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: reshape wide → long</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="co">#chol_long &lt;- choldata %&gt;%</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a> <span class="co">#pivot_longer(</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">#cols = starts_with("Y"), </span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">#names_to = "time", </span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">#values_to = "cholesterol"</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="co">#)</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="co"># I am changing this part to match lecture slides</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>chol_long <span class="ot">&lt;-</span> choldata <span class="sc">%&gt;%</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols=</span><span class="fu">c</span>(y1,y2,y3,y4,y5),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to=</span><span class="st">"month"</span>,<span class="at">values_to=</span><span class="st">"cholesterol"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(month,<span class="at">y1=</span><span class="st">"0"</span>,<span class="at">y2=</span><span class="st">"1"</span>,<span class="at">y3=</span><span class="st">"2"</span>,<span class="at">y4=</span><span class="st">"3"</span>,<span class="at">y5=</span><span class="st">"4"</span>),</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> <span class="fu">factor</span>(time,<span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"1"</span>,<span class="st">"2"</span>,<span class="st">"3"</span>,<span class="st">"4"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">arrange</span>(id,time) <span class="sc">%&gt;%</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(id,group,time,cholesterol)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(chol_long)</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">#str(chol_long)</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: add labels for time if needed</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>chol_long <span class="ot">&lt;-</span> chol_long <span class="sc">%&gt;%</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">group =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(group,</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>                        <span class="st">'1'</span> <span class="ot">=</span> <span class="st">"High-Dose"</span>,</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>                        <span class="st">'2'</span> <span class="ot">=</span> <span class="st">"Placebo"</span>))</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="co"># I commented out this part. It is no longer needed</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>         <span class="co">#time = recode(time,</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>                     <span class="co">#  '0'='Baseline',</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>                      <span class="co"># '1'='6 months',</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>                      <span class="co"># '2'='12 months',</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>                      <span class="co"># '3'='20 months',</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>                      <span class="co"># '4'='24 months')</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>         </span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="co"># D was not already in the data</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Prompted ChatGPT:</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="co"># how do i calculate change from baseline in a long dataset? </span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="co"># ChatGPT output:</span></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="co">#data &lt;- data %&gt;%</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>  <span class="co">#group_by(id) %&gt;%                     # for each subject</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>  <span class="co">#mutate(baseline = outcome[time == 0],# get baseline</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>         <span class="co">#change = outcome - baseline)  # change from baseline</span></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="co"># I changed the code because I don't want cfb calculated for baseline. I changed it to only calculate cfb for post-baseline visits</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>chol_long <span class="ot">&lt;-</span> chol_long <span class="sc">%&gt;%</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">baseline =</span> cholesterol[time<span class="sc">==</span><span class="st">"0"</span>],</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a><span class="at">cfb =</span> <span class="fu">if_else</span>(time<span class="sc">!=</span><span class="st">"0"</span>,cholesterol <span class="sc">-</span> baseline,<span class="cn">NA</span>),</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a><span class="at">cbaseline=</span> baseline <span class="sc">-</span> <span class="dv">230</span>) <span class="co"># I added centered baseline variable`</span></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a><span class="co">#str(chol_long)</span></span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="co"># summarizing the data in a tabular format</span></span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>choldata <span class="sc">%&gt;%</span></span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">group =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>    group,</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>    <span class="st">'1'</span><span class="ot">=</span><span class="st">'High-Dose'</span>,</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>    <span class="st">'2'</span><span class="ot">=</span><span class="st">'Placebo'</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tbl_summary</span>(</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> group,</span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">include =</span> <span class="fu">c</span>(y1,y2,y3,y4,y5),</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">list</span>(<span class="at">y1=</span><span class="st">"Baseline"</span>,<span class="at">y2=</span><span class="st">"6 months"</span>,<span class="at">y3=</span><span class="st">"12 months"</span>,</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>                 <span class="at">y4=</span><span class="st">"20 months"</span>,<span class="at">y5=</span><span class="st">"24 months"</span>),</span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>    <span class="at">statistic =</span> <span class="fu">list</span>(<span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean} ({sd})"</span>),</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>    <span class="at">missing=</span><span class="st">"no"</span>,</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits=</span><span class="fu">list</span>(<span class="at">y1=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>),<span class="at">y2=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>),<span class="at">y3=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>),<span class="at">y4=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>),<span class="at">y5=</span><span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">2</span>))</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_header</span>(<span class="at">label=</span><span class="st">"**Time Point**"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modify_caption</span>(<span class="st">"**Table 1. Mean Cholesterol by Treatment and Time Point**"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="bourgadupw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#bourgadupw table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#bourgadupw thead, #bourgadupw tbody, #bourgadupw tfoot, #bourgadupw tr, #bourgadupw td, #bourgadupw th {
+  border-style: none;
+}
+
+#bourgadupw p {
+  margin: 0;
+  padding: 0;
+}
+
+#bourgadupw .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#bourgadupw .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#bourgadupw .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#bourgadupw .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#bourgadupw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#bourgadupw .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bourgadupw .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#bourgadupw .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#bourgadupw .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#bourgadupw .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#bourgadupw .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#bourgadupw .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#bourgadupw .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#bourgadupw .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#bourgadupw .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#bourgadupw .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#bourgadupw .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#bourgadupw .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#bourgadupw .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bourgadupw .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#bourgadupw .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#bourgadupw .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#bourgadupw .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bourgadupw .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#bourgadupw .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#bourgadupw .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bourgadupw .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bourgadupw .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#bourgadupw .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bourgadupw .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#bourgadupw .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#bourgadupw .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#bourgadupw .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bourgadupw .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#bourgadupw .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#bourgadupw .gt_left {
+  text-align: left;
+}
+
+#bourgadupw .gt_center {
+  text-align: center;
+}
+
+#bourgadupw .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#bourgadupw .gt_font_normal {
+  font-weight: normal;
+}
+
+#bourgadupw .gt_font_bold {
+  font-weight: bold;
+}
+
+#bourgadupw .gt_font_italic {
+  font-style: italic;
+}
+
+#bourgadupw .gt_super {
+  font-size: 65%;
+}
+
+#bourgadupw .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#bourgadupw .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#bourgadupw .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#bourgadupw .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#bourgadupw .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#bourgadupw .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#bourgadupw .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#bourgadupw .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#bourgadupw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<caption><strong>Table 1. Mean Cholesterol by Treatment and Time Point</strong></caption>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="gt_col_headings header">
+<th id="label" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"><strong>Time Point</strong></th>
+<th id="stat_1" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>High-Dose</strong><br> N = 62<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+<th id="stat_2" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col"><strong>Placebo</strong><br> N = 41<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span></th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">Baseline</td>
+<td class="gt_row gt_center" headers="stat_1">226 (39.66)</td>
+<td class="gt_row gt_center" headers="stat_2">236 (55.87)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">6 months</td>
+<td class="gt_row gt_center" headers="stat_1">246 (39.45)</td>
+<td class="gt_row gt_center" headers="stat_2">243 (49.24)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">12 months</td>
+<td class="gt_row gt_center" headers="stat_1">252 (38.33)</td>
+<td class="gt_row gt_center" headers="stat_2">245 (46.11)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="label">20 months</td>
+<td class="gt_row gt_center" headers="stat_1">257 (34.49)</td>
+<td class="gt_row gt_center" headers="stat_2">258 (51.14)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="label">24 months</td>
+<td class="gt_row gt_center" headers="stat_1">255 (49.96)</td>
+<td class="gt_row gt_center" headers="stat_2">257 (49.39)</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="odd">
+<td colspan="3" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;line-height:0;"><sup>1</sup></span> Mean (SD)</td>
+</tr>
+</tfoot>
+
+</table>
+
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create a dataset of mean cholesterol by treatment and time point</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>chol_means <span class="ot">&lt;-</span> chol_long <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time,group) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_chol =</span> <span class="fu">mean</span>(cholesterol,<span class="at">na.rm=</span>T),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sd_chol =</span> <span class="fu">sd</span>(cholesterol,<span class="at">na.rm=</span>T),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n=</span><span class="fu">n</span>(),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">se_chol =</span> sd_chol <span class="sc">/</span> <span class="fu">sqrt</span>(n)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">time.f=</span><span class="fu">as.factor</span>(time))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> <span class="co"># create a spaghetti plot to show individual trajectories and how they may differ from the group trend</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(chol_long,<span class="fu">aes</span>(<span class="at">x=</span>time,<span class="at">y=</span>cholesterol,<span class="at">group=</span>id))<span class="sc">+</span><span class="fu">geom_line</span>(<span class="at">alpha=</span><span class="fl">0.6</span>)<span class="sc">+</span><span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.6</span>)<span class="sc">+</span><span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Spaghetti Plot"</span>, <span class="at">x=</span><span class="st">"Time (months)"</span>,<span class="at">y=</span><span class="st">"Serum Cholesterol"</span>)<span class="sc">+</span><span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="HW1_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a> <span class="co"># create mean trajectory plot with ribbon for uncertainty</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="fu">ggplot</span>(chol_means,<span class="fu">aes</span>(<span class="at">x=</span>time,<span class="at">y=</span>mean_chol,<span class="at">group=</span>group,<span class="at">color=</span>group))<span class="sc">+</span><span class="fu">geom_line</span>(<span class="at">size=</span><span class="fl">1.5</span>)<span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">3</span>)<span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>   <span class="fu">geom_ribbon</span>(<span class="fu">aes</span>(<span class="at">ymin=</span>mean_chol<span class="fl">-1.69</span><span class="sc">*</span>se_chol,<span class="at">ymax=</span>mean_chol<span class="fl">+1.96</span><span class="sc">*</span>se_chol),<span class="at">alpha=</span><span class="fl">0.2</span>,<span class="at">fill=</span><span class="st">"blue"</span>)<span class="sc">+</span><span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Mean Trajectory with 95% CI"</span>,<span class="at">x=</span><span class="st">"Time"</span>,<span class="at">y=</span><span class="st">"Mean Serum Cholesterol"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="HW1_files/figure-html/unnamed-chunk-1-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># pivot data to a wide format</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a> chol_wide <span class="ot">&lt;-</span> chol_long <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">select</span>(id,time,cholesterol)<span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>   <span class="fu">pivot_wider</span>(<span class="at">names_from=</span>time,<span class="at">values_from=</span>cholesterol)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a> <span class="co"># asked ClaudeAI how to remove id column</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a> <span class="co"># Option 2: Use base R (ignores grouping)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>chol_wide <span class="ot">&lt;-</span> chol_wide[, <span class="sc">-</span><span class="dv">1</span>]  <span class="co"># Remove first column</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a> <span class="co"># Calculate correlation matrix</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a> cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(chol_wide,<span class="at">use=</span><span class="st">"pairwise.complete.obs"</span>) </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidy matrix for plotting</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>cor_long <span class="ot">&lt;-</span> cor_matrix <span class="sc">%&gt;%</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">rownames_to_column</span>(<span class="st">"Time1"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>Time1, <span class="at">names_to =</span> <span class="st">"Time2"</span>, <span class="at">values_to =</span> <span class="st">"Correlation"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the heatmap</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(cor_long, <span class="fu">aes</span>(<span class="at">x =</span> Time1, <span class="at">y =</span> Time2, <span class="at">fill =</span> Correlation)) <span class="sc">+</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>() <span class="sc">+</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(<span class="at">low =</span> <span class="st">"red"</span>, <span class="at">high =</span> <span class="st">"blue"</span>, <span class="at">mid =</span> <span class="st">"white"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>                       <span class="at">midpoint =</span> <span class="dv">0</span>, <span class="at">limit =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>), <span class="at">name =</span> <span class="st">"Correlation"</span>) <span class="sc">+</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Correlation Heatmap"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="HW1_files/figure-html/unnamed-chunk-1-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>After restructuring the data with pivot_longer, I opened up the dataset to see if it was created properly.</p>
+<p>We can see from the plot that cholesterol is increasing over time for both treatment groups. For the high-dose group, there is a sharp increase from baseline to 6 months. It increases again from 6 months to 20 months and then decreases from 20 to 24 months. The placebo group increased and finally plateaus around 20-24 months.From the mean trajectory plot, the mean cholesterol for high-dose is increasing over time and the CI widens between time point 3 and 4. There was no clear pattern from the spaghetti plot. It does not necessarily match the group trend. The correlation heatmap is showing that correlation is decaying over time. Correlation between repeated measures cannot be ignored.</p>
+</section>
+<section id="b" class="level3">
+<h3 class="anchored" data-anchor-id="b">(b)</h3>
+<p>The previous statistician fit the two-way ANOVA model <span class="math inline">\(\eta_{ij} = \mu + \alpha_i + \beta_j + \gamma_{ij}\)</span>,<br>
+assuming correlation for repeated measures, as well as the constraints <span class="math inline">\(\alpha_1 = \beta_1 = \gamma_{1j} = \gamma_{i1} = 0\)</span>.</p>
+<p>We can use reference cell coding and set 0 months and placebo for the reference. Then we have <span class="math inline">\(a-1\)</span> columns for main effect of drug and <span class="math inline">\(b-1\)</span> columns for the main effect of time, and <span class="math inline">\((a-1)(b-1)\)</span> columns for the interaction. We use the constraints because <span class="math inline">\(\alpha_1\)</span> is the reference for drug and <span class="math inline">\(\beta_1\)</span> is the reference for time point. Similarly, <span class="math inline">\(\gamma_{1j}\)</span> and <span class="math inline">\(\gamma_{i1}\)</span> are the interaction at placebo treatment and 0 months of follow-up respectively. The parameters that represent treatment effects over time are the interaction terms in the model. Estimates and standard errors of the interaction terms are provided in the table below. <span class="math inline">\(\gamma_{22}\)</span> represents the diffeerence in treatment effect for 6 months vs.&nbsp;0 months of follow-up. <span class="math inline">\(\gamma_{23}\)</span> represents the difference in treatment effect for 12 months vs.&nbsp;0 months of follow-up. <span class="math inline">\(\gamma_{24}\)</span> represents the difference in treatment effect for 20 months vs.&nbsp;0 months of follow-up. <span class="math inline">\(\gamma_{25}\)</span> represents the difference in treatment effect for 24 months vs.&nbsp;0 months of follow-up. We can look at the sign of the parameter estimate to see if the cholesterol increased or decreased.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># setting placebo as reference</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>chol_long<span class="sc">$</span>group <span class="ot">&lt;-</span> <span class="fu">relevel</span>(<span class="fu">as.factor</span>(chol_long<span class="sc">$</span>group),<span class="at">ref=</span><span class="st">"Placebo"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># following textbook &amp; slides</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>strat1 <span class="ot">&lt;-</span> <span class="fu">gls</span>(cholesterol<span class="sc">~</span>group<span class="sc">*</span>time,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">corr=</span><span class="fu">corSymm</span>(,<span class="at">form =</span> <span class="sc">~</span> <span class="fu">as.numeric</span>(time)<span class="sc">|</span>id),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">weights=</span><span class="fu">varIdent</span>(<span class="at">form =</span> <span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>time),<span class="at">na.action=</span>na.omit,<span class="at">data=</span>chol_long)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(strat1,<span class="at">effects=</span><span class="st">"fixed"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">3</span>) <span class="co"># tidying the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">235.927</td>
+<td style="text-align: right;">7.303</td>
+<td style="text-align: right;">32.306</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose</td>
+<td style="text-align: right;">-9.911</td>
+<td style="text-align: right;">9.413</td>
+<td style="text-align: right;">-1.053</td>
+<td style="text-align: right;">0.293</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">time1</td>
+<td style="text-align: right;">7.244</td>
+<td style="text-align: right;">4.805</td>
+<td style="text-align: right;">1.507</td>
+<td style="text-align: right;">0.132</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">time2</td>
+<td style="text-align: right;">8.848</td>
+<td style="text-align: right;">5.207</td>
+<td style="text-align: right;">1.699</td>
+<td style="text-align: right;">0.090</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">time3</td>
+<td style="text-align: right;">23.103</td>
+<td style="text-align: right;">5.297</td>
+<td style="text-align: right;">4.361</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">time4</td>
+<td style="text-align: right;">21.124</td>
+<td style="text-align: right;">7.370</td>
+<td style="text-align: right;">2.866</td>
+<td style="text-align: right;">0.004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose:time1</td>
+<td style="text-align: right;">12.272</td>
+<td style="text-align: right;">6.194</td>
+<td style="text-align: right;">1.981</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose:time2</td>
+<td style="text-align: right;">16.418</td>
+<td style="text-align: right;">6.743</td>
+<td style="text-align: right;">2.435</td>
+<td style="text-align: right;">0.015</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose:time3</td>
+<td style="text-align: right;">4.977</td>
+<td style="text-align: right;">6.982</td>
+<td style="text-align: right;">0.713</td>
+<td style="text-align: right;">0.476</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose:time4</td>
+<td style="text-align: right;">6.903</td>
+<td style="text-align: right;">9.791</td>
+<td style="text-align: right;">0.705</td>
+<td style="text-align: right;">0.481</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="c" class="level3">
+<h3 class="anchored" data-anchor-id="c">(c)</h3>
+<p>Test <span class="math inline">\(H_0 : \delta = 0\)</span> vs.&nbsp;<span class="math inline">\(H_a : \delta \neq 0\)</span>.<br>
+</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using a Wald test</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">linearHypothesis</span>(strat1,<span class="fu">c</span>(<span class="st">"groupHigh-Dose:time1=0"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time2=0"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time3=0"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time4=0"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Linear hypothesis test:
+groupHigh-Dose:time1 = 0
+groupHigh-Dose:time2 = 0
+groupHigh-Dose:time3 = 0
+groupHigh-Dose:time4 = 0
+
+Model 1: restricted model
+Model 2: cholesterol ~ group * time
+
+  Df  Chisq Pr(&gt;Chisq)  
+1                       
+2  4 7.8608    0.09681 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>A Wald test was used. The test statistic was 7.8608 with 4 df (p=0.09681). We fail to reject the null hypothesis with this p-value. There is no clear signal that the response profile differs in high-dose and placebo treatment groups.</p>
+</section>
+<section id="d" class="level3">
+<h3 class="anchored" data-anchor-id="d">(d)</h3>
+<p>Modify the model by assuming both groups have the same baseline mean.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># following textbook code</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>strat2 <span class="ot">&lt;-</span> <span class="fu">gls</span>(cholesterol<span class="sc">~</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">1</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">2</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">3</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">4</span>)<span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">I</span>(time<span class="sc">==</span><span class="dv">1</span> <span class="sc">&amp;</span> group<span class="sc">==</span><span class="st">"High-Dose"</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">2</span> <span class="sc">&amp;</span> group<span class="sc">==</span><span class="st">"High-Dose"</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">3</span> <span class="sc">&amp;</span> group<span class="sc">==</span><span class="st">"High-Dose"</span>)<span class="sc">+</span><span class="fu">I</span>(time<span class="sc">==</span><span class="dv">4</span> <span class="sc">&amp;</span> group<span class="sc">==</span><span class="st">"High-Dose"</span>), <span class="at">corr=</span><span class="fu">corSymm</span>(,<span class="at">form=</span> <span class="sc">~</span><span class="fu">as.numeric</span>(time)<span class="sc">|</span>id), </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">weights=</span><span class="fu">varIdent</span>(<span class="at">form =</span> <span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>time),<span class="at">na.action=</span>na.omit,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">data=</span>chol_long)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#summary(strat2)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(strat2, <span class="at">effects=</span><span class="st">"fixed"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits=</span><span class="dv">3</span>) <span class="co"># tidying the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 51%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">229.961</td>
+<td style="text-align: right;">4.610</td>
+<td style="text-align: right;">49.883</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">I(time == 1)TRUE</td>
+<td style="text-align: right;">8.926</td>
+<td style="text-align: right;">4.532</td>
+<td style="text-align: right;">1.969</td>
+<td style="text-align: right;">0.050</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">I(time == 2)TRUE</td>
+<td style="text-align: right;">10.974</td>
+<td style="text-align: right;">4.800</td>
+<td style="text-align: right;">2.286</td>
+<td style="text-align: right;">0.023</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">I(time == 3)TRUE</td>
+<td style="text-align: right;">25.127</td>
+<td style="text-align: right;">4.936</td>
+<td style="text-align: right;">5.090</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">I(time == 4)TRUE</td>
+<td style="text-align: right;">23.471</td>
+<td style="text-align: right;">7.025</td>
+<td style="text-align: right;">3.341</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">I(time == 1 &amp; group == “High-Dose”)TRUE</td>
+<td style="text-align: right;">9.478</td>
+<td style="text-align: right;">5.596</td>
+<td style="text-align: right;">1.694</td>
+<td style="text-align: right;">0.091</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">I(time == 2 &amp; group == “High-Dose”)TRUE</td>
+<td style="text-align: right;">12.886</td>
+<td style="text-align: right;">5.850</td>
+<td style="text-align: right;">2.203</td>
+<td style="text-align: right;">0.028</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">I(time == 3 &amp; group == “High-Dose”)TRUE</td>
+<td style="text-align: right;">1.614</td>
+<td style="text-align: right;">6.208</td>
+<td style="text-align: right;">0.260</td>
+<td style="text-align: right;">0.795</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">I(time == 4 &amp; group == “High-Dose”)TRUE</td>
+<td style="text-align: right;">3.003</td>
+<td style="text-align: right;">9.063</td>
+<td style="text-align: right;">0.331</td>
+<td style="text-align: right;">0.741</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># again doing a Wald test</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">linearHypothesis</span>(strat2,<span class="fu">c</span>(<span class="st">"I(time == 1 &amp; group == </span><span class="sc">\"</span><span class="st">High-Dose</span><span class="sc">\"</span><span class="st">)TRUE=0"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"I(time == 2 &amp; group == </span><span class="sc">\"</span><span class="st">High-Dose</span><span class="sc">\"</span><span class="st">)TRUE=0"</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"I(time == 3 &amp; group == </span><span class="sc">\"</span><span class="st">High-Dose</span><span class="sc">\"</span><span class="st">)TRUE=0"</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"I(time == 4 &amp; group == </span><span class="sc">\"</span><span class="st">High-Dose</span><span class="sc">\"</span><span class="st">)TRUE=0"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Linear hypothesis test:
+I(time  = = 1 &amp; group == "High-Dose")TRUE=0
+I(time  = = 2 &amp; group == "High-Dose")TRUE=0
+I(time  = = 3 &amp; group == "High-Dose")TRUE=0
+I(time  = = 4 &amp; group == "High-Dose")TRUE=0
+
+Model 1: restricted model
+Model 2: cholesterol ~ I(time == 1) + I(time == 2) + I(time == 3) + I(time == 
+    4) + I(time == 1 &amp; group == "High-Dose") + I(time == 2 &amp; 
+    group == "High-Dose") + I(time == 3 &amp; group == "High-Dose") + 
+    I(time == 4 &amp; group == "High-Dose")
+
+  Df  Chisq Pr(&gt;Chisq)
+1                     
+2  4 6.7542     0.1495</code></pre>
+</div>
+</div>
+<p>Estimates and standard errors of <span class="math inline">\(\delta\)</span> are the interaction terms in the table above. A Wald was used to test <span class="math inline">\(\delta=0\)</span> vs.&nbsp;<span class="math inline">\(\delta \neq 0\)</span>. The test statistic is 6.7542 with 4 degrees of freedom (p=0.1495). With this p-value, we fail to reject the null hypothesis. There is no clear signal that the response profile differs in placebo and high-dose treatment groups. The same conclusion was reached in the Wald test in c). It changes the interpretation of the model in that there is now no main effect for treatment group. We can see that when we fit the model we don’t get a parameter estimate for the main effect of group. We also see that we get a smaller test statistic and larger p-value in d) as compared to part c).</p>
+</section>
+<section id="e" class="level3">
+<h3 class="anchored" data-anchor-id="e">(e)</h3>
+<p>Let <span class="math inline">\(D_k\)</span> be the <span class="math inline">\(4 \times 1\)</span> vector of changes from baseline for subject <span class="math inline">\(k\)</span>. Denote the corresponding cell means as <span class="math inline">\(\psi_{ij}\)</span>.</p>
+<p><span class="math inline">\(\lambda\)</span> is the parameter estimates and standard errors for the interaction terms in the below model. Now the outcome is a change score, specifically change from baseline. Testing the interaction is a test for parallel profiels for the change from baseline in mean cholesterol from the 2nd time point through 5th time point. If the second time point is chosen as reference, then the test for treatment effect is a test for change from baseline at time point 2 being the same across treatment groups. To test whether change patterns are the same in all groups, we would have to do a joint test to combine the main effect of treatment group and group <span class="math inline">\(\times\)</span> interaction. This test is equivalent to testing group <span class="math inline">\(\times\)</span> interaction in part b).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit model with change from baseline as response</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>strat3 <span class="ot">&lt;-</span> <span class="fu">gls</span>(cfb <span class="sc">~</span> group<span class="sc">*</span>time, <span class="at">corr=</span><span class="fu">corSymm</span>(,<span class="at">form=</span><span class="sc">~</span><span class="fu">as.numeric</span>(time)<span class="sc">|</span>id),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">weights=</span><span class="fu">varIdent</span>(<span class="at">form=</span><span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>time),<span class="at">na.action=</span>na.omit,<span class="at">data=</span>chol_long)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co">#summary(strat3)</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(strat3, <span class="at">effects=</span><span class="st">"fixed"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits=</span><span class="dv">3</span>) <span class="co"># tidying the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">7.244</td>
+<td style="text-align: right;">4.805</td>
+<td style="text-align: right;">1.507</td>
+<td style="text-align: right;">0.133</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose</td>
+<td style="text-align: right;">12.272</td>
+<td style="text-align: right;">6.194</td>
+<td style="text-align: right;">1.981</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">time2</td>
+<td style="text-align: right;">1.609</td>
+<td style="text-align: right;">4.609</td>
+<td style="text-align: right;">0.349</td>
+<td style="text-align: right;">0.727</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">time3</td>
+<td style="text-align: right;">16.151</td>
+<td style="text-align: right;">4.584</td>
+<td style="text-align: right;">3.523</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">time4</td>
+<td style="text-align: right;">13.785</td>
+<td style="text-align: right;">6.649</td>
+<td style="text-align: right;">2.073</td>
+<td style="text-align: right;">0.039</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose:time2</td>
+<td style="text-align: right;">4.028</td>
+<td style="text-align: right;">5.979</td>
+<td style="text-align: right;">0.674</td>
+<td style="text-align: right;">0.501</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose:time3</td>
+<td style="text-align: right;">-8.070</td>
+<td style="text-align: right;">6.097</td>
+<td style="text-align: right;">-1.324</td>
+<td style="text-align: right;">0.187</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose:time4</td>
+<td style="text-align: right;">-5.226</td>
+<td style="text-align: right;">8.901</td>
+<td style="text-align: right;">-0.587</td>
+<td style="text-align: right;">0.557</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="f" class="level3">
+<h3 class="anchored" data-anchor-id="f">(f)</h3>
+<p>Test <span class="math inline">\(H_0 : \lambda = 0\)</span> vs.&nbsp;<span class="math inline">\(H_a : \lambda \neq 0\)</span>.<br>
+</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using a Wald test again</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">linearHypothesis</span>(strat3,<span class="fu">c</span>(<span class="st">"groupHigh-Dose=0"</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time2=0"</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time3=0"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time4=0"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Linear hypothesis test:
+groupHigh-Dose = 0
+groupHigh-Dose:time2 = 0
+groupHigh-Dose:time3 = 0
+groupHigh-Dose:time4 = 0
+
+Model 1: restricted model
+Model 2: cfb ~ group * time
+
+  Df  Chisq Pr(&gt;Chisq)  
+1                       
+2  4 7.9914    0.09189 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>The Wald statistic is 7.99 with 4 degrees of freedom with a p-value of 0.09189. This is almost identical to the Wald test results from c). There is again no clear signal that the response profile differs between high-dose and placebo treatment groups. The textbook mentions that many cholesterol measurements are missing due to missed visit, lost or inadequate lab specimens, or patients lost to follow-up. As a result, we cannot calculate change from baseline if we do not have a cholesterol value for that visit. Since using change scores does not incorporate all available data, I think using original outcomes is preferable to using change from baseline as response. We notice that the estimate for group effect from this model is the same as the estimate for group <span class="math inline">\(\times\)</span> time interaction from b) that corresponds to the contrast of change from baseline to 6 months.</p>
+</section>
+<section id="g" class="level3">
+<h3 class="anchored" data-anchor-id="g">(g)</h3>
+<p>Add baseline response (centered at 230) as a covariate. Call the new parameter vector <span class="math inline">\(\lambda^*\)</span>.<br>
+The centered baseline variable called cbaseline was derived at the beginning of this HTML document. It was made by subtracting 230 from the baseline measurement. The parameter estimates and standard errors for <span class="math inline">\(\lambda^*\)</span> are provided below. By centering the baseline, we have a more meaningful intercept. Now the intercept is expected serum cholesterol for 6 months and baseline cholesterol of 230 mg/dL. I checked the output from Google Gemini against BIOS 663 lecture notes. In this strategy, we are switching from marginal to conditional estimand. This is largely based on study design. This study was an RCT so targeting a conditional estimand is typically more efficient.</p>
+<p><strong>Asked Google Gemini</strong>: does centering baseline at 230 affect the interpretation of treatment effects in this model?</p>
+<p><strong>Output</strong>: How Centering a Predictor Variable Affects a Regression Model Centering a predictor variable involves subtracting a constant from each value. The goal is to set the new intercept to the value of the outcome variable when the predictor is at the new reference point (in this case, 230).</p>
+<p>Intercept Interpretation The original intercept would represent the expected outcome when all predictor variables are zero. In this model, the original intercept would be the expected outcome for the control group at time 1, with a baseline of 0.</p>
+<p>By centering the cbaseline term at 230, the new intercept (9.187) now represents the expected outcome for the control group at time 1 when the baseline value is 230.</p>
+<p>Other Coefficients Centering a predictor does not affect the coefficients of other terms or their interpretation.</p>
+<p>The coefficients for time (e.g., time2, time3, time4) still represent the difference in the expected outcome from the reference time (time 1) for the control group.</p>
+<p>The coefficients for the interaction terms (e.g., groupHigh-Dose:time2, groupHigh-Dose:time3, groupHigh-Dose:time4) still represent the additional effect of the High-Dose group at each specific time point, relative to the control group.</p>
+<p>The coefficient for groupHigh-Dose (9.023) still represents the difference in expected outcome between the High-Dose group and the control group at time 1 when the centered baseline is 230.</p>
+<p>In short, centering is a data transformation technique that can improve the interpretability of the intercept, particularly in models where a value of zero for a predictor variable is not meaningful. It does not alter the relationships or effect sizes between the other variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit the model with centered baseline response</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>strat4 <span class="ot">&lt;-</span> <span class="fu">gls</span>(cfb<span class="sc">~</span>cbaseline <span class="sc">+</span> group<span class="sc">*</span>time,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">corr=</span><span class="fu">corSymm</span>(,<span class="at">form=</span><span class="sc">~</span><span class="fu">as.numeric</span>(time)<span class="sc">|</span>id),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">weights=</span><span class="fu">varIdent</span>(<span class="at">form=</span><span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>time),<span class="at">na.action=</span>na.omit,<span class="at">data=</span>chol_long)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co">#summary(strat4)</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(strat4, <span class="at">effects=</span><span class="st">"fixed"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits=</span><span class="dv">3</span>) <span class="co"># tidying the output</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">9.187</td>
+<td style="text-align: right;">4.379</td>
+<td style="text-align: right;">2.098</td>
+<td style="text-align: right;">0.037</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">cbaseline</td>
+<td style="text-align: right;">-0.328</td>
+<td style="text-align: right;">0.049</td>
+<td style="text-align: right;">-6.672</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose</td>
+<td style="text-align: right;">9.023</td>
+<td style="text-align: right;">5.653</td>
+<td style="text-align: right;">1.596</td>
+<td style="text-align: right;">0.111</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">time2</td>
+<td style="text-align: right;">1.586</td>
+<td style="text-align: right;">4.578</td>
+<td style="text-align: right;">0.347</td>
+<td style="text-align: right;">0.729</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">time3</td>
+<td style="text-align: right;">15.923</td>
+<td style="text-align: right;">4.539</td>
+<td style="text-align: right;">3.508</td>
+<td style="text-align: right;">0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">time4</td>
+<td style="text-align: right;">13.806</td>
+<td style="text-align: right;">6.605</td>
+<td style="text-align: right;">2.090</td>
+<td style="text-align: right;">0.037</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose:time2</td>
+<td style="text-align: right;">4.144</td>
+<td style="text-align: right;">5.937</td>
+<td style="text-align: right;">0.698</td>
+<td style="text-align: right;">0.486</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">groupHigh-Dose:time3</td>
+<td style="text-align: right;">-7.394</td>
+<td style="text-align: right;">6.030</td>
+<td style="text-align: right;">-1.226</td>
+<td style="text-align: right;">0.221</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">groupHigh-Dose:time4</td>
+<td style="text-align: right;">-5.218</td>
+<td style="text-align: right;">8.842</td>
+<td style="text-align: right;">-0.590</td>
+<td style="text-align: right;">0.555</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>strat4_full <span class="ot">&lt;-</span> <span class="fu">update</span>(strat4,<span class="at">method=</span><span class="st">"ML"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="h" class="level3">
+<h3 class="anchored" data-anchor-id="h">(h)</h3>
+<p>Using the model from part (g), test <span class="math inline">\(H_0 : \lambda^* = 0\)</span> vs.&nbsp;<span class="math inline">\(H_a : \lambda^* \neq 0\)</span> with a Wald test.<br>
+We fail to reject the null hypothesis for the Wald test. The test statistic is 6.539 with 4 degrees of freedom (p=0.1623).</p>
+<p>A strength of the Wald test is that it’s quick and can test a linear combination. A limitation is that it’s SE-sensitive. It is sensitive to covariance mis-specification.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># asked chatGPT:</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co">#how do i do wald test on this model: strat4 &lt;- gls(cfb~cbaseline + group*time, corr=corSymm(,form=~as.numeric(time)|id), weights=varIdent(form=~1|time),na.action=na.omit,data=chol_long)? i need to test whether the treatment effect is signficant. treatment is group</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#ChatGPT output:</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">#library(car)</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># you can run this on your fitted model (ML or REML), but for consistency use the ML fit</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">#linearHypothesis(full_ml, c("groupDrug = 0",</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                           <span class="co">#"groupDrug:time6 = 0",</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                           <span class="co">#"groupDrug:time12 = 0",</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                           <span class="co">#"groupDrug:time20 = 0",</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                           <span class="co">#"groupDrug:time24 = 0"))</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co"># I changed the above code because it didn't match my output</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="fu">linearHypothesis</span>(strat4,<span class="fu">c</span>(<span class="st">"groupHigh-Dose=0"</span>,</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time2=0"</span>,</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time3=0"</span>,</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"groupHigh-Dose:time4=0"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Linear hypothesis test:
+groupHigh-Dose = 0
+groupHigh-Dose:time2 = 0
+groupHigh-Dose:time3 = 0
+groupHigh-Dose:time4 = 0
+
+Model 1: restricted model
+Model 2: cfb ~ cbaseline + group * time
+
+  Df  Chisq Pr(&gt;Chisq)
+1                     
+2  4 6.5391     0.1623</code></pre>
+</div>
+</div>
+</section>
+<section id="i" class="level3">
+<h3 class="anchored" data-anchor-id="i">(i)</h3>
+<p>Test the same hypothesis with a likelihood ratio test.<br>
+The test statistic is 6.43 with 4 degrees of freedom (p=0.1691). The p-value is almost identical to the p-value from h) and the test statistic was of similar magnitude. The LRT might be preferred for nested models. Nested models are models in which the reduced model is a special case of the full model.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fitting the reduced model</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>strat4_reduced <span class="ot">&lt;-</span> <span class="fu">gls</span>(cfb<span class="sc">~</span>cbaseline <span class="sc">+</span> time,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">corr=</span><span class="fu">corSymm</span>(,<span class="at">form=</span><span class="sc">~</span><span class="fu">as.numeric</span>(time)<span class="sc">|</span>id),</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">weights=</span><span class="fu">varIdent</span>(<span class="at">form=</span><span class="sc">~</span><span class="dv">1</span><span class="sc">|</span>time),<span class="at">na.action=</span>na.omit,<span class="at">data=</span>chol_long,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">method=</span><span class="st">"ML"</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(strat4_full,strat4_reduced)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Model df      AIC      BIC    logLik   Test  L.Ratio p-value
+strat4_full        1 19 3271.751 3344.724 -1616.876                        
+strat4_reduced     2 15 3270.184 3327.794 -1620.092 1 vs 2 6.432922  0.1691</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="j" class="level3">
+<h3 class="anchored" data-anchor-id="j">(j)</h3>
+<p>What assumptions would guarantee that <span class="math inline">\(\lambda^* = 0\)</span>, and therefore that adjusting for baseline still yields a valid estimate of <span class="math inline">\(\lambda\)</span>?<br>
+The regression slope relating <span class="math inline">\(Y_{ij}\)</span> to <span class="math inline">\(Y_{i1}\)</span> (for <span class="math inline">\(j= 2, \dots, 5\)</span>) is the same at all 4 post-baseline occasions. It constrains <span class="math inline">\(\text{Cov}(Y_{i1},Y_{i2}) = \text{Cov}(Y_{i1},Y_{i3}) = \dots = \text{Cov}(Y_{i1},Y_{i5})\)</span>. There is potential for model mis-specification and misleading inferences about treatment effect over time. The baseline mean serum cholesterol only differed by a small amount between groups so this is no issue. We can assume the effect is linear.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
