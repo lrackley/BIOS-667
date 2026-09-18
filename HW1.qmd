@@ -1,0 +1,336 @@
+---
+title: "HW1"
+author: "Anonymous ;)"
+format: html
+editor: visual
+---
+
+# Instructions
+
+Please compute the following questions to the best of your ability. Be thorough in explaining your reasoning on how you arrived at your answers, and present your results in a manner that would make it easy for a statistician colleague to follow. Do not copy and paste raw output from R, and use properly formatted tables, informative and labeled figures, and well defined notation where applicable. Explain and justify any assumptions you make. You may use AI to assist you in answering the following questions. AI is used, provide the AI tool that was used, the prompt, and the output from the prompt. You do not need to provide additional code or output.
+
+# Question 1
+
+Read the study and data description in problem 5.1 from Chapter 5 of the textbook. The two groups will be identified by $i = 1$ for placebo and $i = 2$ for high dose. The repeated measures will be identifed by $j = 1,\ldots, 5$. The obsevation times (0, 6, 12, 20, 24 months) will be denoted $t_{ij}$ . The cell means in the $2 \times 5$ layout will be denoted $\eta_{ij}$. The data is provided in \texttt{cholesterol.dat}.
+
+Use REML and Wald tests whenever possible and valid. Assume a common (for both groups) unstructured matrix for the covariance of the response vector. For hypothesis testing, describe your method, give the value of the test statistic, the degrees of freedom (if applicable) and the p-value.
+
+There are some missing outcomes in this problem which, depending on the reason for missingness, may lead to biased estimation. **Ignore that aspect** in this problem; missing data will be discussed in more detail later in this class.
+
+### (a)
+
+```{r echo=TRUE}
+#| message: false
+#| warning: false
+# read in data
+choldata <- read.table("~/Desktop/Fall 2025/BIOS 667/Homework/cholesterol.dat",
+                   header=T)
+
+# Used ChatGPT:
+# how do i make a table in R with mean, SD, and var for each treatment group? my data is in wide format. Y1,Y2,Y3,Y4,Y5 is cholesterol dat different time points, baseline,6,12,20,24 months and i have group =1,2. High-Dose and Placebo respectively
+# Load packages
+library(dplyr)
+library(tidyr)
+library(gtsummary) # for making summary tables
+library(ggplot2) # for plotting
+library(gt)
+library(nlme) # for fitting linear and non-linear mixed effect models
+library(lme4) # fitting linear mixed effects models
+library(lmerTest) # testing linear mixed effects models
+library(broom.mixed) # for tidying mixed models
+library(kableExtra) # for nice tables
+library(car) # for testing linear hypotheses
+
+# Example: your data frame is "chol"
+# Variables: group, Y1, Y2, Y3, Y4, Y5
+
+# Step 1: reshape wide → long
+#chol_long <- choldata %>%
+ #pivot_longer(
+    #cols = starts_with("Y"), 
+    #names_to = "time", 
+    #values_to = "cholesterol"
+  #)
+# I am changing this part to match lecture slides
+chol_long <- choldata %>%
+  pivot_longer(cols=c(y1,y2,y3,y4,y5),
+               names_to="month",values_to="cholesterol") %>%
+  mutate(
+    time = dplyr::recode(month,y1="0",y2="1",y3="2",y4="3",y5="4"),
+    time = factor(time,levels = c("0","1","2","3","4"))) %>%
+      arrange(id,time) %>%
+      select(id,group,time,cholesterol)
+  
+View(chol_long)
+#str(chol_long)
+
+# Step 2: add labels for time if needed
+chol_long <- chol_long %>%
+  mutate(group = dplyr::recode(group,
+                        '1' = "High-Dose",
+                        '2' = "Placebo"))
+# I commented out this part. It is no longer needed
+         #time = recode(time,
+                     #  '0'='Baseline',
+                      # '1'='6 months',
+                      # '2'='12 months',
+                      # '3'='20 months',
+                      # '4'='24 months')
+         
+# D was not already in the data
+# Prompted ChatGPT:
+# how do i calculate change from baseline in a long dataset? 
+# ChatGPT output:
+#data <- data %>%
+  #group_by(id) %>%                     # for each subject
+  #mutate(baseline = outcome[time == 0],# get baseline
+         #change = outcome - baseline)  # change from baseline
+# I changed the code because I don't want cfb calculated for baseline. I changed it to only calculate cfb for post-baseline visits
+chol_long <- chol_long %>%
+  group_by(id) %>%
+  mutate(baseline = cholesterol[time=="0"],
+cfb = if_else(time!="0",cholesterol - baseline,NA),
+cbaseline= baseline - 230) # I added centered baseline variable`
+
+#str(chol_long)
+
+# summarizing the data in a tabular format
+choldata %>%
+  mutate(group = dplyr::recode(
+    group,
+    '1'='High-Dose',
+    '2'='Placebo')) %>%
+  tbl_summary(
+    by = group,
+    include = c(y1,y2,y3,y4,y5),
+    label = list(y1="Baseline",y2="6 months",y3="12 months",
+                 y4="20 months",y5="24 months"),
+    statistic = list(all_continuous() ~ "{mean} ({sd})"),
+    missing="no",
+    digits=list(y1=c(0,2),y2=c(0,2),y3=c(0,2),y4=c(0,2),y5=c(0,2))
+    ) %>%
+  modify_header(label="**Time Point**") %>%
+  modify_caption("**Table 1. Mean Cholesterol by Treatment and Time Point**")
+
+# create a dataset of mean cholesterol by treatment and time point
+chol_means <- chol_long %>%
+  group_by(time,group) %>%
+  summarize(
+    mean_chol = mean(cholesterol,na.rm=T),
+    sd_chol = sd(cholesterol,na.rm=T),
+    n=n(),
+    se_chol = sd_chol / sqrt(n)
+  ) %>% 
+  mutate(time.f=as.factor(time))
+  
+ # create a spaghetti plot to show individual trajectories and how they may differ from the group trend
+ ggplot(chol_long,aes(x=time,y=cholesterol,group=id))+geom_line(alpha=0.6)+geom_point(alpha=0.6)+labs(title="Spaghetti Plot", x="Time (months)",y="Serum Cholesterol")+theme_minimal()
+ 
+ # create mean trajectory plot with ribbon for uncertainty
+ ggplot(chol_means,aes(x=time,y=mean_chol,group=group,color=group))+geom_line(size=1.5)+
+   geom_point(size=3)+
+   geom_ribbon(aes(ymin=mean_chol-1.69*se_chol,ymax=mean_chol+1.96*se_chol),alpha=0.2,fill="blue")+labs(title="Mean Trajectory with 95% CI",x="Time",y="Mean Serum Cholesterol")
+ 
+# pivot data to a wide format
+ chol_wide <- chol_long %>%
+   select(id,time,cholesterol)%>%
+   pivot_wider(names_from=time,values_from=cholesterol)
+ 
+ # asked ClaudeAI how to remove id column
+ # Option 2: Use base R (ignores grouping)
+chol_wide <- chol_wide[, -1]  # Remove first column
+ 
+ # Calculate correlation matrix
+ cor_matrix <- cor(chol_wide,use="pairwise.complete.obs") 
+
+# Tidy matrix for plotting
+cor_long <- cor_matrix %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("Time1") %>%
+  pivot_longer(-Time1, names_to = "Time2", values_to = "Correlation")
+
+# Create the heatmap
+ggplot(cor_long, aes(x = Time1, y = Time2, fill = Correlation)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "red", high = "blue", mid = "white",
+                       midpoint = 0, limit = c(-1,1), name = "Correlation") +
+  theme_minimal() +
+  labs(title = "Correlation Heatmap")
+```
+
+After restructuring the data with pivot_longer, I opened up the dataset to see if it was created properly.
+
+We can see from the plot that cholesterol is increasing over time for both treatment groups. For the high-dose group, there is a sharp increase from baseline to 6 months. It increases again from 6 months to 20 months and then decreases from 20 to 24 months. The placebo group increased and finally plateaus around 20-24 months.From the mean trajectory plot, the mean cholesterol for high-dose is increasing over time and the CI widens between time point 3 and 4. There was no clear pattern from the spaghetti plot. It does not necessarily match the group trend. The correlation heatmap is showing that correlation is decaying over time. Correlation between repeated measures cannot be ignored.
+
+### (b)
+
+The previous statistician fit the two-way ANOVA model $\eta_{ij} = \mu + \alpha_i + \beta_j + \gamma_{ij}$,\
+assuming correlation for repeated measures, as well as the constraints $\alpha_1 = \beta_1 = \gamma_{1j} = \gamma_{i1} = 0$.
+
+We can use reference cell coding and set 0 months and placebo for the reference. Then we have $a-1$ columns for main effect of drug and $b-1$ columns for the main effect of time, and $(a-1)(b-1)$ columns for the interaction. We use the constraints because $\alpha_1$ is the reference for drug and $\beta_1$ is the reference for time point. Similarly, $\gamma_{1j}$ and $\gamma_{i1}$ are the interaction at placebo treatment and 0 months of follow-up respectively. The parameters that represent treatment effects over time are the interaction terms in the model. Estimates and standard errors of the interaction terms are provided in the table below. $\gamma_{22}$ represents the diffeerence in treatment effect for 6 months vs. 0 months of follow-up. $\gamma_{23}$ represents the difference in treatment effect for 12 months vs. 0 months of follow-up. $\gamma_{24}$ represents the difference in treatment effect for 20 months vs. 0 months of follow-up. $\gamma_{25}$ represents the difference in treatment effect for 24 months vs. 0 months of follow-up. We can look at the sign of the parameter estimate to see if the cholesterol increased or decreased.
+
+```{r}
+# setting placebo as reference
+chol_long$group <- relevel(as.factor(chol_long$group),ref="Placebo")
+# following textbook & slides
+strat1 <- gls(cholesterol~group*time,
+              corr=corSymm(,form = ~ as.numeric(time)|id),
+              weights=varIdent(form = ~1|time),na.action=na.omit,data=chol_long)
+
+tidy(strat1,effects="fixed") |>
+  kable(digits = 3) # tidying the output
+
+```
+
+### (c)
+
+Test $H_0 : \delta = 0$ vs. $H_a : \delta \neq 0$.\
+
+```{r}
+# using a Wald test
+linearHypothesis(strat1,c("groupHigh-Dose:time1=0",
+                          "groupHigh-Dose:time2=0",
+                          "groupHigh-Dose:time3=0",
+                          "groupHigh-Dose:time4=0"))
+
+```
+
+A Wald test was used. The test statistic was 7.8608 with 4 df (p=0.09681). We fail to reject the null hypothesis with this p-value. There is no clear signal that the response profile differs in high-dose and placebo treatment groups.
+
+### (d)
+
+Modify the model by assuming both groups have the same baseline mean.
+
+```{r}
+# following textbook code
+strat2 <- gls(cholesterol~I(time==1)+I(time==2)+I(time==3)+I(time==4)+
+                I(time==1 & group=="High-Dose")+I(time==2 & group=="High-Dose")+I(time==3 & group=="High-Dose")+I(time==4 & group=="High-Dose"), corr=corSymm(,form= ~as.numeric(time)|id), 
+              weights=varIdent(form = ~1|time),na.action=na.omit,
+              data=chol_long)
+#summary(strat2)
+
+tidy(strat2, effects="fixed")|>
+  kable(digits=3) # tidying the output
+
+# again doing a Wald test
+linearHypothesis(strat2,c("I(time == 1 & group == \"High-Dose\")TRUE=0",
+                          "I(time == 2 & group == \"High-Dose\")TRUE=0",
+                          "I(time == 3 & group == \"High-Dose\")TRUE=0",
+                          "I(time == 4 & group == \"High-Dose\")TRUE=0"))
+
+```
+
+Estimates and standard errors of $\delta$ are the interaction terms in the table above. A Wald was used to test $\delta=0$ vs. $\delta \neq 0$. The test statistic is 6.7542 with 4 degrees of freedom (p=0.1495). With this p-value, we fail to reject the null hypothesis. There is no clear signal that the response profile differs in placebo and high-dose treatment groups. The same conclusion was reached in the Wald test in c). It changes the interpretation of the model in that there is now no main effect for treatment group. We can see that when we fit the model we don't get a parameter estimate for the main effect of group. We also see that we get a smaller test statistic and larger p-value in d) as compared to part c).
+
+### (e)
+
+Let $D_k$ be the $4 \times 1$ vector of changes from baseline for subject $k$. Denote the corresponding cell means as $\psi_{ij}$.
+
+$\lambda$ is the parameter estimates and standard errors for the interaction terms in the below model. Now the outcome is a change score, specifically change from baseline. Testing the interaction is a test for parallel profiels for the change from baseline in mean cholesterol from the 2nd time point through 5th time point. If the second time point is chosen as reference, then the test for treatment effect is a test for change from baseline at time point 2 being the same across treatment groups. To test whether change patterns are the same in all groups, we would have to do a joint test to combine the main effect of treatment group and group $\times$ interaction. This test is equivalent to testing group $\times$ interaction in part b).
+
+```{r}
+# fit model with change from baseline as response
+strat3 <- gls(cfb ~ group*time, corr=corSymm(,form=~as.numeric(time)|id),
+              weights=varIdent(form=~1|time),na.action=na.omit,data=chol_long)
+#summary(strat3)
+tidy(strat3, effects="fixed")|>
+  kable(digits=3) # tidying the output
+```
+
+### (f)
+
+Test $H_0 : \lambda = 0$ vs. $H_a : \lambda \neq 0$.\
+
+```{r}
+# using a Wald test again
+linearHypothesis(strat3,c("groupHigh-Dose=0",
+                          "groupHigh-Dose:time2=0",
+                          "groupHigh-Dose:time3=0",
+                          "groupHigh-Dose:time4=0"))
+```
+
+The Wald statistic is 7.99 with 4 degrees of freedom with a p-value of 0.09189. This is almost identical to the Wald test results from c). There is again no clear signal that the response profile differs between high-dose and placebo treatment groups. The textbook mentions that many cholesterol measurements are missing due to missed visit, lost or inadequate lab specimens, or patients lost to follow-up. As a result, we cannot calculate change from baseline if we do not have a cholesterol value for that visit. Since using change scores does not incorporate all available data, I think using original outcomes is preferable to using change from baseline as response. We notice that the estimate for group effect from this model is the same as the estimate for group $\times$ time interaction from b) that corresponds to the contrast of change from baseline to 6 months.
+
+### (g)
+
+Add baseline response (centered at 230) as a covariate. Call the new parameter vector $\lambda^*$.\
+The centered baseline variable called cbaseline was derived at the beginning of this HTML document. It was made by subtracting 230 from the baseline measurement. The parameter estimates and standard errors for $\lambda^*$ are provided below. By centering the baseline, we have a more meaningful intercept. Now the intercept is expected serum cholesterol for 6 months and baseline cholesterol of 230 mg/dL. I checked the output from Google Gemini against BIOS 663 lecture notes. In this strategy, we are switching from marginal to conditional estimand. This is largely based on study design. This study was an RCT so targeting a conditional estimand is typically more efficient.
+
+**Asked Google Gemini**: does centering baseline at 230 affect the interpretation of treatment effects in this model?
+
+**Output**: How Centering a Predictor Variable Affects a Regression Model Centering a predictor variable involves subtracting a constant from each value. The goal is to set the new intercept to the value of the outcome variable when the predictor is at the new reference point (in this case, 230).
+
+Intercept Interpretation The original intercept would represent the expected outcome when all predictor variables are zero. In this model, the original intercept would be the expected outcome for the control group at time 1, with a baseline of 0.
+
+By centering the cbaseline term at 230, the new intercept (9.187) now represents the expected outcome for the control group at time 1 when the baseline value is 230.
+
+Other Coefficients Centering a predictor does not affect the coefficients of other terms or their interpretation.
+
+The coefficients for time (e.g., time2, time3, time4) still represent the difference in the expected outcome from the reference time (time 1) for the control group.
+
+The coefficients for the interaction terms (e.g., groupHigh-Dose:time2, groupHigh-Dose:time3, groupHigh-Dose:time4) still represent the additional effect of the High-Dose group at each specific time point, relative to the control group.
+
+The coefficient for groupHigh-Dose (9.023) still represents the difference in expected outcome between the High-Dose group and the control group at time 1 when the centered baseline is 230.
+
+In short, centering is a data transformation technique that can improve the interpretability of the intercept, particularly in models where a value of zero for a predictor variable is not meaningful. It does not alter the relationships or effect sizes between the other variables.
+
+```{r}
+# fit the model with centered baseline response
+strat4 <- gls(cfb~cbaseline + group*time,
+              corr=corSymm(,form=~as.numeric(time)|id),
+              weights=varIdent(form=~1|time),na.action=na.omit,data=chol_long)
+#summary(strat4)
+
+tidy(strat4, effects="fixed")|>
+  kable(digits=3) # tidying the output
+
+strat4_full <- update(strat4,method="ML")
+
+```
+
+### (h)
+
+Using the model from part (g), test $H_0 : \lambda^* = 0$ vs. $H_a : \lambda^* \neq 0$ with a Wald test.\
+We fail to reject the null hypothesis for the Wald test. The test statistic is 6.539 with 4 degrees of freedom (p=0.1623).
+
+A strength of the Wald test is that it's quick and can test a linear combination. A limitation is that it's SE-sensitive. It is sensitive to covariance mis-specification.
+
+```{r}
+# asked chatGPT:
+#how do i do wald test on this model: strat4 <- gls(cfb~cbaseline + group*time, corr=corSymm(,form=~as.numeric(time)|id), weights=varIdent(form=~1|time),na.action=na.omit,data=chol_long)? i need to test whether the treatment effect is signficant. treatment is group
+#ChatGPT output:
+#library(car)
+# you can run this on your fitted model (ML or REML), but for consistency use the ML fit
+#linearHypothesis(full_ml, c("groupDrug = 0",
+                           #"groupDrug:time6 = 0",
+                           #"groupDrug:time12 = 0",
+                           #"groupDrug:time20 = 0",
+                           #"groupDrug:time24 = 0"))
+# I changed the above code because it didn't match my output
+linearHypothesis(strat4,c("groupHigh-Dose=0",
+                          "groupHigh-Dose:time2=0",
+                          "groupHigh-Dose:time3=0",
+                          "groupHigh-Dose:time4=0"))
+
+```
+
+### (i)
+
+Test the same hypothesis with a likelihood ratio test.\
+The test statistic is 6.43 with 4 degrees of freedom (p=0.1691). The p-value is almost identical to the p-value from h) and the test statistic was of similar magnitude. The LRT might be preferred for nested models. Nested models are models in which the reduced model is a special case of the full model.
+
+```{r}
+# fitting the reduced model
+strat4_reduced <- gls(cfb~cbaseline + time,
+              corr=corSymm(,form=~as.numeric(time)|id),
+              weights=varIdent(form=~1|time),na.action=na.omit,data=chol_long,
+              method="ML")
+anova(strat4_full,strat4_reduced)
+```
+
+------------------------------------------------------------------------
+
+### (j)
+
+What assumptions would guarantee that $\lambda^* = 0$, and therefore that adjusting for baseline still yields a valid estimate of $\lambda$?\
+The regression slope relating $Y_{ij}$ to $Y_{i1}$ (for $j= 2, \dots, 5$) is the same at all 4 post-baseline occasions. It constrains $\text{Cov}(Y_{i1},Y_{i2}) = \text{Cov}(Y_{i1},Y_{i3}) = \dots = \text{Cov}(Y_{i1},Y_{i5})$. There is potential for model mis-specification and misleading inferences about treatment effect over time. The baseline mean serum cholesterol only differed by a small amount between groups so this is no issue. We can assume the effect is linear.
